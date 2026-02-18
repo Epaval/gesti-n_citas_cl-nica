@@ -1,0 +1,1283 @@
+{% extends 'core/base.html' %}
+
+{% block titulo %}{{ paciente.nombre }} - Detalle{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #3b82f6;
+    --primary-soft: #dbeafe;
+    --success: #10b981;
+    --success-dark: #059669;
+    --success-soft: #d1fae5;
+    --warning: #f59e0b;
+    --warning-dark: #d97706;
+    --warning-soft: #fef3c7;
+    --danger: #ef4444;
+    --danger-dark: #dc2626;
+    --danger-soft: #fee2e2;
+    --info: #6366f1;
+    --info-soft: #e0e7ff;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --radius-sm: 0.375rem;
+    --radius: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+}
+
+/* Layout General */
+body {
+    background: var(--gray-50);
+}
+
+/* Header del Paciente */
+.patient-header {
+    background: linear-gradient(135deg, var(--gray-800), var(--gray-900));
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.patient-avatar {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 600;
+    box-shadow: var(--shadow-md);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+}
+
+.patient-info {
+    flex: 1;
+}
+
+.patient-name {
+    color: white;
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+}
+
+.patient-details {
+    color: var(--gray-300);
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.patient-details i {
+    color: var(--primary-light);
+    width: 1.25rem;
+}
+
+.patient-details span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.patient-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* Badge de estado */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.status-badge.active {
+    background: var(--success-soft);
+    color: var(--success-dark);
+}
+
+.status-badge.inactive {
+    background: var(--danger-soft);
+    color: var(--danger-dark);
+}
+
+/* Expediente Card */
+.expediente-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.expediente-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.expediente-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--warning-soft);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--warning-dark);
+    font-size: 1.25rem;
+}
+
+.expediente-text h5 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+}
+
+.expediente-text small {
+    color: var(--gray-500);
+    font-size: 0.85rem;
+}
+
+/* Botones Modernos */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    line-height: 1;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-success {
+    background: var(--success);
+    color: white;
+}
+
+.btn-success:hover {
+    background: var(--success-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: var(--danger-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-warning {
+    background: var(--warning);
+    color: white;
+}
+
+.btn-warning:hover {
+    background: var(--warning-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--gray-300);
+    color: var(--gray-700);
+    box-shadow: none;
+}
+
+.btn-outline:hover {
+    background: var(--gray-50);
+    border-color: var(--gray-400);
+}
+
+.btn-disabled {
+    background: var(--gray-200);
+    color: var(--gray-500);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.btn-disabled:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Cards */
+.card {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+}
+
+.card-header {
+    background: var(--gray-50);
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.card-header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-header h4 i {
+    color: var(--primary);
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Info Grid */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.info-item {
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    transition: all 0.2s ease;
+}
+
+.info-item:hover {
+    background: var(--gray-50);
+}
+
+.info-item strong {
+    display: block;
+    color: var(--gray-600);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    margin-bottom: 0.5rem;
+}
+
+.info-item strong i {
+    color: var(--primary);
+    margin-right: 0.5rem;
+}
+
+.info-item .info-content {
+    color: var(--gray-800);
+    font-size: 1rem;
+}
+
+.info-item a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.info-item a:hover {
+    text-decoration: underline;
+}
+
+/* Sexo Badge */
+.sexo-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.sexo-badge.masculino {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+}
+
+.sexo-badge.femenino {
+    background: var(--info-soft);
+    color: var(--info);
+}
+
+/* Tabla Moderna */
+.table-responsive {
+    overflow-x: auto;
+    border-radius: var(--radius);
+}
+
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.modern-table thead tr {
+    background: var(--gray-50);
+    border-bottom: 2px solid var(--gray-200);
+}
+
+.modern-table th {
+    text-align: left;
+    padding: 1rem 1rem;
+    font-weight: 600;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.025em;
+}
+
+.modern-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--gray-200);
+    color: var(--gray-700);
+}
+
+.modern-table tbody tr:hover {
+    background: var(--gray-50);
+}
+
+/* Badges de estado para citas */
+.cita-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.cita-badge.PROGRAMADA {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+}
+
+.cita-badge.COMPLETADA {
+    background: var(--success-soft);
+    color: var(--success-dark);
+}
+
+.cita-badge.CANCELADA {
+    background: var(--danger-soft);
+    color: var(--danger-dark);
+}
+
+.cita-badge.EN_ESPERA {
+    background: var(--warning-soft);
+    color: var(--warning-dark);
+}
+
+/* Acciones de tabla */
+.table-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gray-100);
+    color: var(--gray-600);
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-icon:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+/* Sidebar Cards */
+.sidebar-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--gray-200);
+}
+
+.sidebar-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.sidebar-title i {
+    color: var(--primary);
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    text-align: center;
+}
+
+.stat-item {
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    background: var(--gray-50);
+}
+
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 0.25rem;
+}
+
+.stat-value.total {
+    color: var(--primary);
+}
+
+.stat-value.completadas {
+    color: var(--success);
+}
+
+.stat-value.pendientes {
+    color: var(--warning);
+}
+
+.stat-value.canceladas {
+    color: var(--danger);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+/* Lista de Doctores */
+.doctor-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.doctor-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.doctor-item:last-child {
+    border-bottom: none;
+}
+
+.doctor-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--primary-soft);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-dark);
+    font-size: 0.875rem;
+}
+
+.doctor-info {
+    flex: 1;
+}
+
+.doctor-name {
+    font-weight: 500;
+    color: var(--gray-800);
+    margin-bottom: 0.25rem;
+}
+
+.doctor-date {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+}
+
+/* Acciones verticales */
+.vertical-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.vertical-buttons .btn {
+    width: 100%;
+    justify-content: flex-start;
+}
+
+/* Documentos Card */
+.documents-card {
+    background: var(--gray-50);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-top: 1.5rem;
+    border: 1px dashed var(--gray-300);
+}
+
+.documents-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gray-700);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.documents-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* Nota de Privacidad */
+.privacy-note {
+    background: linear-gradient(135deg, var(--danger-soft), #fff);
+    border: 1px solid var(--danger);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+}
+
+.privacy-title {
+    color: var(--danger-dark);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.privacy-text {
+    font-size: 0.85rem;
+    color: var(--gray-600);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--gray-500);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: var(--gray-300);
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    margin: 0.5rem 0 1.5rem 0;
+}
+
+/* Modal Moderno */
+.modern-modal {
+    border-radius: var(--radius-lg);
+    border: none;
+    box-shadow: var(--shadow-lg);
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.modal-alert {
+    background: linear-gradient(135deg, #fff, var(--danger-soft));
+    margin: 0;
+    border: none;
+    border-radius: 0;
+}
+
+.modal-icon {
+    text-align: center;
+    padding: 2rem 0 1rem 0;
+}
+
+.modal-icon i {
+    font-size: 4rem;
+    color: var(--danger);
+}
+
+.modal-title {
+    text-align: center;
+    color: var(--danger-dark);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.modal-message {
+    text-align: center;
+    padding: 0 1.5rem;
+}
+
+.modal-lead {
+    font-size: 1.1rem;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+}
+
+.modal-description {
+    color: var(--gray-500);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Tabla de Permisos */
+.permissions-table {
+    margin: 1.5rem 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+}
+
+.permissions-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.permissions-table th {
+    background: var(--gray-100);
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--gray-700);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.permissions-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--gray-200);
+    color: var(--gray-600);
+}
+
+.permissions-table tr:last-child td {
+    border-bottom: none;
+}
+
+.permission-check {
+    color: var(--success);
+    font-weight: bold;
+}
+
+.permission-times {
+    color: var(--danger);
+    font-weight: bold;
+}
+
+.modal-footer {
+    padding: 1.5rem;
+    text-align: center;
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .patient-header {
+        padding: 1.25rem;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .patient-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .patient-avatar {
+        margin: 0 auto;
+    }
+    
+    .patient-details {
+        justify-content: center;
+    }
+    
+    .patient-actions {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .expediente-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .expediente-info {
+        flex-direction: column;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .modern-table {
+        border: 0;
+    }
+    
+    .modern-table thead {
+        display: none;
+    }
+    
+    .modern-table tbody tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        background: white;
+    }
+    
+    .modern-table td {
+        display: block;
+        text-align: right;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--gray-100);
+    }
+    
+    .modern-table td:last-child {
+        border-bottom: 0;
+    }
+    
+    .modern-table td::before {
+        content: attr(data-label);
+        float: left;
+        font-weight: 600;
+        color: var(--gray-600);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+    }
+    
+    .table-actions {
+        justify-content: flex-end;
+    }
+    
+    .stats-grid {
+        gap: 0.5rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .patient-avatar {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .patient-name {
+        font-size: 1.25rem;
+    }
+    
+    .patient-details {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-start;
+    }
+    
+    .patient-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .expediente-info {
+        width: 100%;
+    }
+    
+    .expediente-text {
+        text-align: center;
+    }
+    
+    .documents-actions {
+        flex-direction: column;
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block contenido %}
+<!-- Header del Paciente Modernizado -->
+<div class="patient-header">
+    <div class="patient-avatar">
+        {{ paciente.nombre|slice:":1"|upper }}
+    </div>
+    <div class="patient-info">
+        <h1 class="patient-name">{{ paciente.nombre }}</h1>
+        <p class="patient-details">
+            <span><i class="fas fa-birthday-cake"></i> {{ paciente.edad }} años</span>
+            <span><i class="fas fa-calendar-plus"></i> Registrado: {{ paciente.fecha_registro|date:"d/m/Y" }}</span>
+            <span>
+                <span class="status-badge {% if paciente.activo %}active{% else %}inactive{% endif %}">
+                    {% if paciente.activo %}✓ Activo{% else %}✗ Inactivo{% endif %}
+                </span>
+            </span>
+        </p>
+    </div>
+    <div class="patient-actions">
+        {% if user.rol in 'ADMIN JEFE ASISTENTE' %}
+        <a href="{% url 'editar_paciente' paciente.id %}" class="btn btn-outline">
+            <i class="fas fa-edit"></i> Editar
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Expediente Médico Card -->
+<div class="expediente-card">
+    <div class="expediente-info">
+        <div class="expediente-icon">
+            <i class="fas fa-folder-medical"></i>
+        </div>
+        <div class="expediente-text">
+            <h5><i class="fas fa-folder-medical"></i> Expediente Médico</h5>
+            <small>El expediente médico contiene información clínica confidencial del paciente</small>
+        </div>
+    </div>
+    <div>
+        {% if user.rol in 'MEDICO JEFE' %}
+        <a href="{% url 'ver_expediente' paciente.id %}" class="btn btn-primary">
+            <i class="fas fa-eye"></i> Ver Expediente
+        </a>
+        {% else %}
+        <button type="button" class="btn btn-disabled" data-open="modal-acceso-restringido">
+            <i class="fas fa-lock"></i> Acceso Restringido
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="grid-x grid-padding-x">
+    <!-- Columna Principal -->
+    <div class="cell medium-8">
+        <!-- Información de Contacto -->
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-address-card"></i> Información de Contacto</h4>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong><i class="fas fa-id-card"></i> Cédula</strong>
+                        <div class="info-content">{{ paciente.ci }}</div>
+                    </div>
+                    <div class="info-item">
+                        <strong><i class="fas fa-venus-mars"></i> Sexo</strong>
+                        <div class="info-content">
+                            <span class="sexo-badge {% if paciente.sexo == 'M' %}masculino{% elif paciente.sexo == 'F' %}femenino{% endif %}">
+                                {{ paciente.get_sexo_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <strong><i class="fas fa-birthday-cake"></i> Fecha de Nacimiento</strong>
+                        <div class="info-content">{{ paciente.fecha_nacimiento|date:"d/m/Y" }} ({{ paciente.edad }} años)</div>
+                    </div>
+                    <div class="info-item">
+                        <strong><i class="fas fa-phone"></i> Teléfono</strong>
+                        <div class="info-content"><a href="tel:{{ paciente.telefono }}">{{ paciente.telefono }}</a></div>
+                    </div>
+                    {% if paciente.telefono_alternativo %}
+                    <div class="info-item">
+                        <strong><i class="fas fa-phone-alt"></i> Teléfono Alternativo</strong>
+                        <div class="info-content"><a href="tel:{{ paciente.telefono_alternativo }}">{{ paciente.telefono_alternativo }}</a></div>
+                    </div>
+                    {% endif %}
+                    {% if paciente.email %}
+                    <div class="info-item">
+                        <strong><i class="fas fa-envelope"></i> Email</strong>
+                        <div class="info-content"><a href="mailto:{{ paciente.email }}">{{ paciente.email }}</a></div>
+                    </div>
+                    {% endif %}
+                    {% if paciente.direccion %}
+                    <div class="info-item">
+                        <strong><i class="fas fa-map-marker-alt"></i> Dirección</strong>
+                        <div class="info-content">{{ paciente.direccion }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Historial de Citas -->
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-calendar-alt"></i> Historial de Citas</h4>
+                <a href="{% url 'lista_citas' %}?buscar={{ paciente.nombre }}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-list"></i> Ver Todas
+                </a>
+            </div>
+            <div class="card-body">
+                {% if citas %}
+                <div class="table-responsive">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Fecha</th>
+                                <th>Hora</th>
+                                <th>Doctor</th>
+                                <th>Motivo</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cita in citas %}
+                            <tr>
+                                <td data-label="ID"><strong>#{{ cita.id }}</strong></td>
+                                <td data-label="Fecha">{{ cita.fecha|date:"d/m/Y" }}</td>
+                                <td data-label="Hora">{{ cita.hora|time:"H:i" }}</td>
+                                <td data-label="Doctor">{{ cita.doctor.nombre }}</td>
+                                <td data-label="Motivo">{{ cita.motivo|truncatechars:30 }}</td>
+                                <td data-label="Estado">
+                                    <span class="cita-badge {{ cita.estado }}">{{ cita.get_estado_display }}</span>
+                                </td>
+                                <td data-label="Acciones">
+                                    <div class="table-actions">
+                                        <a href="{% url 'detalle_cita' cita.id %}" class="btn-icon">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <p>Este paciente no tiene citas registradas</p>
+                    {% if user.rol in 'ADMIN JEFE ASISTENTE' %}
+                    <a href="{% url 'crear_cita' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Agendar Primera Cita
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Columna Lateral -->
+    <div class="cell medium-4">
+        <!-- Estadísticas Rápidas -->
+        <div class="sidebar-card">
+            <h5 class="sidebar-title">
+                <i class="fas fa-chart-pie"></i> Estadísticas
+            </h5>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value total">{{ citas|length }}</div>
+                    <div class="stat-label">Total Citas</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value completadas">{{ citas|length }}</div>
+                    <div class="stat-label">Completadas</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value pendientes">0</div>
+                    <div class="stat-label">Pendientes</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value canceladas">0</div>
+                    <div class="stat-label">Canceladas</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Doctores que lo han Atendido -->
+        <div class="sidebar-card">
+            <h5 class="sidebar-title">
+                <i class="fas fa-user-md"></i> Doctores
+            </h5>
+            {% if citas %}
+            <ul class="doctor-list">
+                {% for cita in citas|dictsortreversed:"fecha"|slice:":5" %}
+                <li class="doctor-item">
+                    <div class="doctor-icon">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <div class="doctor-info">
+                        <div class="doctor-name">{{ cita.doctor.nombre }}</div>
+                        <div class="doctor-date">{{ cita.fecha|date:"d/m/Y" }}</div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="empty-state" style="padding: 1.5rem;">
+                <p style="margin: 0;"><small>Sin doctores asignados</small></p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Acciones Disponibles -->
+        <div class="sidebar-card">
+            <h5 class="sidebar-title">
+                <i class="fas fa-tools"></i> Acciones
+            </h5>
+            <div class="vertical-buttons">
+                {% if user.rol in 'ADMIN JEFE ASISTENTE' %}
+                <a href="{% url 'crear_cita' %}" class="btn btn-primary">
+                    <i class="fas fa-calendar-plus"></i> Agendar Cita
+                </a>
+                <a href="{% url 'editar_paciente' paciente.id %}" class="btn btn-outline">
+                    <i class="fas fa-edit"></i> Editar Paciente
+                </a>
+                {% endif %}
+
+                {% if user.rol in 'MEDICO JEFE' %}
+                <a href="{% url 'ver_expediente' paciente.id %}" class="btn btn-success">
+                    <i class="fas fa-folder-medical"></i> Ver Expediente
+                </a>
+                {% endif %}
+
+                <a href="{% url 'lista_pacientes' %}" class="btn btn-danger">
+                    <i class="fas fa-arrow-left"></i> Volver a Pacientes
+                </a>
+            </div>
+
+            <!-- Documentos para el Paciente -->
+            {% if user.rol in 'MEDICO JEFE' %}
+            <div class="documents-card">
+                <div class="documents-title">
+                    <i class="fas fa-file-medical" style="color: var(--primary);"></i>
+                    Documentos para el Paciente
+                </div>
+                <div class="documents-actions">
+                    <a href="{% url 'formulario_examenes' paciente.id %}" class="btn btn-outline btn-sm">
+                        <i class="fas fa-flask"></i> Exámenes
+                    </a>
+                    <a href="{% url 'formulario_receta' paciente.id %}" class="btn btn-success btn-sm">
+                        <i class="fas fa-prescription"></i> Receta
+                    </a>
+                </div>
+                <small style="color: var(--gray-500); display: block; margin-top: 0.75rem;">
+                    <i class="fas fa-info-circle"></i> Documentos para entrega al paciente
+                </small>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Nota de Privacidad -->
+        <div class="privacy-note">
+            <h6 class="privacy-title">
+                <i class="fas fa-lock"></i> Confidencialidad
+            </h6>
+            <p class="privacy-text">
+                La información de este paciente está protegida por leyes de privacidad médica.
+                El acceso queda registrado para auditoría.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Acceso Restringido Modernizado -->
+<div class="reveal modern-modal" id="modal-acceso-restringido" data-reveal data-animation-in="slide-in-up"
+    data-animation-out="slide-out-down">
+    <div class="modal-alert">
+        <div class="modal-icon">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+
+        <h3 class="modal-title">
+            <i class="fas fa-lock"></i> Acceso Restringido
+        </h3>
+
+        <div class="modal-message">
+            <p class="modal-lead">
+                No tienes permisos para acceder al expediente médico de este paciente.
+            </p>
+            <p class="modal-description">
+                <i class="fas fa-info-circle"></i>
+                <strong>¿Por qué?</strong><br>
+                El expediente médico contiene información clínica sensible protegida por leyes de privacidad.
+                Solo el personal médico autorizado (Médicos y Jefe Médico) puede acceder a esta información.
+            </p>
+        </div>
+
+        <!-- Tabla de Permisos -->
+        <div class="permissions-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rol</th>
+                        <th>Ver Expediente</th>
+                        <th>Crear Diagnóstico</th>
+                        <th>Editar Información</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><i class="fas fa-user-md"></i> Médico</td>
+                        <td><span class="permission-check">✓ Sí*</span></td>
+                        <td><span class="permission-check">✓ Sí</span></td>
+                        <td><span class="permission-check">✓ Propios</span></td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-user-tie"></i> Jefe Médico</td>
+                        <td><span class="permission-check">✓ Sí</span></td>
+                        <td><span class="permission-check">✓ Sí</span></td>
+                        <td><span class="permission-check">✓ Todos</span></td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-user-cog"></i> Administrador</td>
+                        <td><span class="permission-times">✗ No</span></td>
+                        <td><span class="permission-times">✗ No</span></td>
+                        <td><span class="permission-times">✗ No</span></td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-user"></i> Asistente</td>
+                        <td><span class="permission-times">✗ No</span></td>
+                        <td><span class="permission-times">✗ No</span></td>
+                        <td><span class="permission-times">✗ No</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <small style="color: var(--gray-500); display: block; padding: 0 1.5rem;">
+            *Médicos solo pueden ver pacientes que han atendido
+        </small>
+
+        <div class="modal-footer">
+            <button class="btn btn-outline" data-close aria-label="Cerrar modal" type="button">
+                <i class="fas fa-times"></i> Entendido, Cerrar
+            </button>
+            <a href="{% url 'lista_pacientes' %}" class="btn btn-primary" data-close>
+                <i class="fas fa-arrow-left"></i> Volver a Pacientes
+            </a>
+        </div>
+    </div>
+
+    <button class="close-button" data-close aria-label="Cerrar modal" type="button">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof Foundation !== 'undefined') {
+            const revealElem = document.getElementById('modal-acceso-restringido');
+            if (revealElem && !revealElem._foundation) {
+                new Foundation.Reveal(revealElem);
+            }
+        }
+    });
+</script>
+{% endblock %}

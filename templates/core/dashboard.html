@@ -1,0 +1,738 @@
+{% extends 'core/base.html' %}
+
+{% block titulo %}Dashboard{% endblock %}
+
+{% block contenido %}
+<!-- Dashboard Header 
+<div class="dashboard-header">
+    <div class="header-content">
+        <h2 class="dashboard-title">
+            <i class="fas fa-tachometer-alt"></i> 
+            Panel de Control
+        </h2>
+        <p class="welcome-message">
+            <i class="fas fa-user-circle"></i>
+            Bienvenido, <strong>{{ user.username }}</strong> · 
+            <span class="role-badge">{{ user.get_rol_display }}</span>
+        </p>
+    </div>
+</div>-->
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+   <!--  <div class="stat-card">
+        <div class="stat-icon patients">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-number">{{ total_pacientes }}</div>
+            <div class="stat-label">Pacientes</div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon doctors">
+            <i class="fas fa-user-md"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-number">{{ total_doctores }}</div>
+            <div class="stat-label">Doctores</div>
+        </div>
+    </div>-->
+    
+    <div class="stat-card">
+        <div class="stat-icon today">
+            <i class="fas fa-calendar-day"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-number">{{ citas_hoy }}</div>
+            <div class="stat-label">Citas Hoy</div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon scheduled">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-number">{{ citas_programadas }}</div>
+            <div class="stat-label">Programadas</div>
+        </div>
+    </div>
+</div>
+<!-- Quick Actions -->
+<div class="management-section">
+    <div class="section-header">
+        <h3><i class="fas fa-tools"></i> Calendario de Citas</h3>
+        <div class="section-actions">
+            <a href="{% url 'calendario_citas' %}" class="btn btn-outline">
+                <i class="fas fa-calendar-alt"></i> Ver Calendario
+            </a>
+            {% if user.rol in 'ADMIN JEFE ASISTENTE' %}
+            <a href="{% url 'crear_cita' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nueva Cita
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Management Sections -->
+{% if user.rol == 'JEFE' or user.rol == 'ADMIN' %}
+<div class="management-section">
+    <div class="section-header">
+        <h3><i class="fas fa-tools"></i> Gestión de Personal Médico</h3>
+        <div class="section-actions">
+            <a href="{% url 'lista_doctores' %}" class="btn btn-outline">
+                <i class="fas fa-user-md"></i> Ver Doctores
+            </a>
+            <a href="{% url 'crear_doctor' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Registrar Nuevo Doctor
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Staff Management -->
+<div class="management-section staff-section">
+    <div class="section-header">
+        <h3><i class="fas fa-users-cog"></i> Gestión de Personal (Staff)</h3>
+        <p class="section-description">
+            <i class="fas fa-info-circle"></i>
+            Administra usuarios, roles y permisos de acceso al sistema
+        </p>
+    </div>
+    
+    <div class="action-buttons">
+        <a href="{% url 'lista_staff' %}" class="btn btn-primary">
+            <i class="fas fa-list"></i> Ver Todo el Staff
+        </a>
+        <a href="{% url 'crear_staff_usuario' %}" class="btn btn-success">
+            <i class="fas fa-user-plus"></i> Nuevo Usuario
+        </a>
+        <a href="{% url 'lista_doctores' %}" class="btn btn-secondary">
+            <i class="fas fa-user-md"></i> Doctores
+        </a>
+    </div>
+    
+    <!-- Staff Stats -->
+   <!--  <div class="staff-stats">
+        <div class="stat-item">
+            <div class="stat-value admin">{{ total_admins|default:0 }}</div>
+            <div class="stat-label-small">Admins</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value chief">{{ total_jefes|default:0 }}</div>
+            <div class="stat-label-small">Jefes</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value doctor">{{ total_medicos|default:0 }}</div>
+            <div class="stat-label-small">Médicos</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value assistant">{{ total_asistentes|default:0 }}</div>
+            <div class="stat-label-small">Asistentes</div>
+        </div>
+    </div>-->
+</div>
+{% endif %}
+
+
+
+<!-- Appointments Table -->
+{% if mis_citas %}
+<div class="appointments-section">
+    <h3 class="section-title">
+        <i class="fas fa-calendar"></i> Mis Próximas Citas
+    </h3>
+    
+    <div class="table-responsive">
+        <table class="appointments-table">
+            <thead>
+                <tr>
+                    <th>Paciente</th>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Motivo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cita in mis_citas %}
+                <tr>
+                    <td data-label="Paciente">
+                        <span class="patient-name">{{ cita.paciente.nombre }}</span>
+                    </td>
+                    <td data-label="Fecha">
+                        <span class="date">{{ cita.fecha|date:"d/m/Y" }}</span>
+                    </td>
+                    <td data-label="Hora">
+                        <span class="time">{{ cita.hora|time:"H:i" }}</span>
+                    </td>
+                    <td data-label="Motivo">
+                        <span class="reason">{{ cita.motivo|truncatechars:30 }}</span>
+                    </td>
+                    <td data-label="Acciones">
+                        <div class="action-group">
+                            <a href="{% url 'detalle_cita' cita.id %}" class="btn-action view">
+                                <i class="fas fa-eye"></i>
+                                <span class="action-text">Ver</span>
+                            </a>
+                            <a href="{% url 'completar_cita' cita.id %}" class="btn-action complete">
+                                <i class="fas fa-check"></i>
+                                <span class="action-text">Completar</span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<style>
+/* CSS Variables */
+:root {
+    --primary-color: #2563eb;
+    --primary-dark: #1d4ed8;
+    --success-color: #10b981;
+    --success-dark: #059669;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --radius-sm: 0.375rem;
+    --radius: 0.5rem;
+    --radius-lg: 0.75rem;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+    background: linear-gradient(135deg, var(--gray-800), var(--gray-900));
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-lg);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.dashboard-title {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dashboard-title i {
+    color: var(--primary-color);
+    font-size: 1.75rem;
+}
+
+.welcome-message {
+    color: var(--gray-300);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+}
+
+.welcome-message strong {
+    color: white;
+}
+
+.role-badge {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+    border: 1px solid var(--gray-100);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.stat-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-icon.patients {
+    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+    color: #0369a1;
+}
+
+.stat-icon.doctors {
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    color: #4338ca;
+}
+
+.stat-icon.today {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    color: #15803d;
+}
+
+.stat-icon.scheduled {
+    background: linear-gradient(135deg, #fff7ed, #fed7aa);
+    color: #9a3412;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    line-height: 1.2;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    color: var(--gray-500);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Management Sections */
+.management-section {
+    background: white;
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--gray-200);
+}
+
+.staff-section {
+    border-left: 4px solid var(--warning-color);
+}
+
+.section-header {
+    margin-bottom: 1.25rem;
+}
+
+.section-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-header h3 i {
+    color: var(--primary-color);
+}
+
+.section-description {
+    color: var(--gray-500);
+    font-size: 0.875rem;
+    margin: 0.5rem 0 0 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-success:hover {
+    background: var(--success-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--gray-300);
+    color: var(--gray-700);
+}
+
+.btn-outline:hover {
+    background: var(--gray-50);
+    border-color: var(--gray-400);
+}
+
+.btn-secondary {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+.btn-secondary:hover {
+    background: var(--gray-200);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+/* Staff Stats */
+.staff-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--gray-200);
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 0.25rem;
+}
+
+.stat-value.admin { color: #1a5276; }
+.stat-value.chief { color: #f39c12; }
+.stat-value.doctor { color: #3498db; }
+.stat-value.assistant { color: #95a5a6; }
+
+.stat-label-small {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+/* Appointments Section */
+.appointments-section {
+    margin-top: 2rem;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.section-title i {
+    color: var(--primary-color);
+}
+
+/* Table Styles */
+.table-responsive {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    background: white;
+}
+
+.appointments-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.appointments-table thead tr {
+    background: var(--gray-50);
+    border-bottom: 2px solid var(--gray-200);
+}
+
+.appointments-table th {
+    text-align: left;
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.025em;
+}
+
+.appointments-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--gray-200);
+    color: var(--gray-700);
+}
+
+.appointments-table tbody tr:hover {
+    background: var(--gray-50);
+}
+
+.patient-name {
+    font-weight: 500;
+    color: var(--gray-800);
+}
+
+.date, .time {
+    font-family: 'SF Mono', 'Monaco', monospace;
+}
+
+.reason {
+    color: var(--gray-600);
+    max-width: 200px;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Action Buttons */
+.action-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-action.view {
+    background: var(--gray-100);
+    color: var(--gray-600);
+}
+
+.btn-action.view:hover {
+    background: var(--gray-200);
+    color: var(--gray-700);
+}
+
+.btn-action.complete {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.btn-action.complete:hover {
+    background: #a7f3d0;
+}
+
+.action-text {
+    display: inline;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .staff-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-header {
+        padding: 1rem;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .stats-grid {
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 1.25rem;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    .section-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .appointments-table {
+        border: 0;
+    }
+    
+    .appointments-table thead {
+        display: none;
+    }
+    
+    .appointments-table tbody tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        background: white;
+    }
+    
+    .appointments-table td {
+        display: block;
+        text-align: right;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--gray-100);
+    }
+    
+    .appointments-table td:last-child {
+        border-bottom: 0;
+    }
+    
+    .appointments-table td::before {
+        content: attr(data-label);
+        float: left;
+        font-weight: 600;
+        color: var(--gray-600);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+    }
+    
+    .action-group {
+        justify-content: flex-end;
+    }
+    
+    .action-text {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .staff-stats {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .stat-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+        background: var(--gray-50);
+        border-radius: var(--radius-sm);
+    }
+    
+    .stat-value {
+        margin-bottom: 0;
+    }
+    
+    .stat-label-small {
+        font-size: 0.875rem;
+    }
+}
+</style>
+{% endblock %}

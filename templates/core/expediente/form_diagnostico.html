@@ -1,0 +1,129 @@
+{% extends 'core/base.html' %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+
+{% block contenido %}
+<div class="grid-x grid-padding-x">
+    <div class="cell medium-10 large-8">
+        <div class="callout">
+            <h3><i class="fas fa-stethoscope"></i> {{ titulo }}</h3>
+            <p class="lead">Paciente: <strong>{{ paciente.nombre }}</strong></p>
+            <hr>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="grid-x grid-padding-x">
+                    <div class="cell medium-12">
+                        <label>Diagnóstico Principal * (CIE-10 recomendado)
+                            {{ form.diagnostico_principal }}
+                            {% if form.diagnostico_principal.errors %}
+                            <small class="error">{{ form.diagnostico_principal.errors.0 }}</small>
+                            {% endif %}
+                        </label>
+                    </div>
+
+                    <!-- ✅ Campo Doctor (solo visible para JEFE) -->
+                    {% if user.rol == 'JEFE' %}
+                    <div class="cell medium-12">
+                        <label>{{ form.doctor.label }}
+                            {{ form.doctor }}
+                            {% if form.doctor.errors %}
+                            <small class="error">{{ form.doctor.errors.0 }}</small>
+                            {% endif %}
+                            <small class="help-text">Selecciona el doctor que realizará el diagnóstico</small>
+                        </label>
+                    </div>
+                    {% else %}
+                    <!-- Campo oculto para médico (se asigna automático) -->
+                    {{ form.doctor }}
+                    {% endif %}
+
+                    <div class="cell medium-12">
+                        <label>Descripción Clínica *
+                            {{ form.descripcion }}
+                            {% if form.descripcion.errors %}
+                            <small class="error">{{ form.descripcion.errors.0 }}</small>
+                            {% endif %}
+                            <small class="help-text">Describa síntomas, hallazgos y evolución</small>
+                        </label>
+                    </div>
+
+                    <div class="cell medium-12">
+                        <label>Tratamiento Prescrito *
+                            {{ form.tratamiento }}
+                            {% if form.tratamiento.errors %}
+                            <small class="error">{{ form.tratamiento.errors.0 }}</small>
+                            {% endif %}
+                            <small class="help-text">Medicamentos, dosis, frecuencia y duración</small>
+                        </label>
+                    </div>
+
+                    <div class="cell medium-12">
+                        <label>Recomendaciones
+                            {{ form.recomendaciones }}
+                            {% if form.recomendaciones.errors %}
+                            <small class="error">{{ form.recomendaciones.errors.0 }}</small>
+                            {% endif %}
+                            <small class="help-text">Indicaciones de estilo de vida, dieta, seguimiento</small>
+                        </label>
+                    </div>
+
+                    <div class="cell medium-12">
+                        <label>Pronóstico
+                            {{ form.pronostico }}
+                            {% if form.pronostico.errors %}
+                            <small class="error">{{ form.pronostico.errors.0 }}</small>
+                            {% endif %}
+                        </label>
+                    </div>
+
+                    {% if user.rol == 'JEFE' %}
+                    <div class="cell medium-12">
+                        <label>
+                            {{ form.activo }}
+                            <strong>Diagnóstico Activo</strong>
+                            <small style="display: block; color: #666;">Desmarcar para ocultar sin eliminar</small>
+                        </label>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <hr>
+
+                <div class="grid-x grid-padding-x">
+                    <div class="cell">
+                        <a href="{% url 'ver_expediente' paciente.id %}" class="button secondary">
+                            <i class="fas fa-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="button primary float-right">
+                            <i class="fas fa-save"></i> Guardar Diagnóstico
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Ayuda -->
+    <div class="cell medium-2 large-4">
+        <div class="callout info">
+            <h6><i class="fas fa-info-circle"></i> Información</h6>
+            <ul class="no-bullet" style="font-size: 0.9em;">
+                <li><i class="fas fa-check"></i> Campos con * son obligatorios</li>
+                <li><i class="fas fa-check"></i> Use códigos CIE-10 cuando sea posible</li>
+                <li><i class="fas fa-check"></i> Sea específico en tratamiento y dosis</li>
+                <li><i class="fas fa-check"></i> No se pueden eliminar diagnósticos</li>
+            </ul>
+        </div>
+
+        <div class="callout warning" style="margin-top: 15px;">
+            <h6><i class="fas fa-exclamation-triangle"></i> Importante</h6>
+            <p style="font-size: 0.85em;">
+                Este diagnóstico quedará registrado permanentemente en el expediente del paciente.
+                Para corregir errores, edite el diagnóstico o cree uno nuevo aclaratorio.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,787 @@
+{% extends 'core/base.html' %}
+
+{% block titulo %}Citas Médicas{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* === Estilos Modernos para Citas === */
+    
+    /* Tarjeta de filtros */
+    .filtros-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .filtros-card label {
+        color: white;
+        font-weight: 500;
+        margin-bottom: 12px;
+        display: block;
+    }
+    
+    .button-group {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .button-group .button {
+        border-radius: 25px;
+        padding: 8px 20px;
+        font-size: 0.9em;
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+    }
+    
+    .button-group .button.primary {
+        background: white;
+        color: #667eea;
+        border-color: white;
+        font-weight: 600;
+    }
+    
+    .button-group .button.secondary {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border-color: rgba(255,255,255,0.4);
+    }
+    
+    .button-group .button.secondary:hover {
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-2px);
+    }
+    
+    /* Tabla moderna */
+    .citas-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    }
+    
+    .citas-table thead {
+        background: linear-gradient(135deg, #1a5276 0%, #2874a6 100%);
+        color: white;
+    }
+    
+    .citas-table thead th {
+        padding: 16px 12px;
+        font-weight: 600;
+        font-size: 0.85em;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: none;
+    }
+    
+    .citas-table tbody tr {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .citas-table tbody tr:hover {
+        background: #f8fafc;
+        transform: translateX(4px);
+        box-shadow: inset 4px 0 0 #667eea;
+    }
+    
+    .citas-table tbody td {
+        padding: 14px 12px;
+        vertical-align: middle;
+        font-size: 0.95em;
+    }
+    
+    /* Badges de estado mejorados */
+    .badge-PROGRAMADA {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .badge-COMPLETADA {
+        background: linear-gradient(135deg, #27ae60, #219653);
+        color: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .badge-CANCELADA {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        color: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .badge-EN_ESPERA {
+        background: linear-gradient(135deg, #f39c12, #d35400);
+        color: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .badge::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        background: currentColor;
+        border-radius: 50%;
+        opacity: 0.8;
+    }
+    
+    /* Botones de acción */
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: 2px;
+        transition: all 0.2s ease;
+        border: none;
+        font-size: 0.9em;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .action-btn.primary { background: #3498db; color: white; }
+    .action-btn.success { background: #27ae60; color: white; }
+    .action-btn.alert { background: #e74c3c; color: white; }
+    .action-btn.warning { background: #f39c12; color: white; }
+    
+    /* Avatar de paciente */
+    .paciente-avatar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .avatar-circle {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9em;
+        flex-shrink: 0;
+    }
+    
+    .paciente-info strong {
+        display: block;
+        font-size: 0.95em;
+    }
+    
+    .paciente-info small {
+        color: #666;
+        font-size: 0.8em;
+    }
+    
+    /* Modal personalizado */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.2s ease;
+    }
+    
+    .modal-overlay.active {
+        display: flex;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .modal-card {
+        background: white;
+        border-radius: 16px;
+        padding: 25px;
+        max-width: 450px;
+        width: 90%;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        animation: slideUp 0.3s ease;
+    }
+    
+    @keyframes slideUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .modal-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .modal-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3em;
+    }
+    
+    .modal-icon.warning { background: #fff3cd; color: #856404; }
+    .modal-icon.success { background: #d4edda; color: #155724; }
+    .modal-icon.alert { background: #f8d7da; color: #721c24; }
+    
+    .modal-title {
+        font-size: 1.2em;
+        font-weight: 600;
+        color: #1a5276;
+        margin: 0;
+    }
+    
+    .modal-body {
+        color: #555;
+        line-height: 1.6;
+        margin-bottom: 25px;
+    }
+    
+    .modal-cita-info {
+        background: #f8f9fa;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin: 15px 0;
+        font-size: 0.9em;
+    }
+    
+    .modal-cita-info p {
+        margin: 4px 0;
+    }
+    
+    .modal-cita-info strong {
+        color: #1a5276;
+        min-width: 80px;
+        display: inline-block;
+    }
+    
+    .modal-footer {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+    
+    .modal-btn {
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        font-size: 0.95em;
+    }
+    
+    .modal-btn.secondary {
+        background: #e9ecef;
+        color: #495057;
+    }
+    
+    .modal-btn.secondary:hover {
+        background: #dee2e6;
+    }
+    
+    .modal-btn.primary {
+        background: #667eea;
+        color: white;
+    }
+    
+    .modal-btn.primary:hover {
+        background: #5568d3;
+        transform: translateY(-2px);
+    }
+    
+    .modal-btn.alert {
+        background: #e74c3c;
+        color: white;
+    }
+    
+    .modal-btn.alert:hover {
+        background: #c0392b;
+        transform: translateY(-2px);
+    }
+    
+    /* Estadísticas */
+    .stats-bar {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 12px;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 10px 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        min-width: 100px;
+    }
+    
+    .stat-value {
+        font-size: 1.5em;
+        font-weight: 700;
+        color: #1a5276;
+    }
+    
+    .stat-label {
+        font-size: 0.8em;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .filtros-card {
+            padding: 15px;
+        }
+        
+        .button-group {
+            justify-content: center;
+        }
+        
+        .citas-table {
+            font-size: 0.85em;
+        }
+        
+        .citas-table thead {
+            display: none;
+        }
+        
+        .citas-table tbody tr {
+            display: block;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+        }
+        
+        .citas-table tbody td {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border: none;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .citas-table tbody td:last-child {
+            border-bottom: none;
+            justify-content: center;
+            padding-top: 12px;
+        }
+        
+        .citas-table tbody td::before {
+            content: attr(data-label);
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            font-size: 0.8em;
+        }
+        
+        .stats-bar {
+            justify-content: center;
+        }
+        
+        .modal-card {
+            margin: 10px;
+            padding: 20px;
+        }
+    }
+    
+    /* Animaciones */
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    .loading {
+        animation: pulse 1.5s infinite;
+    }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<!-- Encabezado -->
+<div class="grid-x grid-padding-x align-justify align-center" style="margin-bottom: 20px;">
+    <div class="cell">
+        <h2><i class="fas fa-calendar-alt"></i> Citas Médicas</h2>
+        <p class="lead" style="color: #666; margin: 5px 0 0 0;">Gestiona y visualiza todas las citas del consultorio</p>
+    </div>
+    <div class="cell small-auto">
+        {% if user.rol in 'ADMIN JEFE ASISTENTE' %}
+        <a href="{% url 'crear_cita' %}" class="button primary" style="border-radius: 25px; padding: 10px 25px;">
+            <i class="fas fa-plus"></i> Nueva Cita
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Estadísticas Rápidas -->
+<div class="stats-bar">
+    <div class="stat-item">
+        <div class="stat-value">{{ citas|length }}</div>
+        <div class="stat-label">Total</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-value" style="color: #3498db;">{{ citas|length }}</div>
+        <div class="stat-label">Programadas</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-value" style="color: #27ae60;">{{ citas|length }}</div>
+        <div class="stat-label">Completadas</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-value" style="color: #e74c3c;">0</div>
+        <div class="stat-label">Canceladas</div>
+    </div>
+</div>
+
+<!-- Filtros Modernos -->
+<div class="filtros-card">
+    <form method="get" class="grid-x grid-padding-x align-center">
+        <div class="cell medium-4 small-12">
+            <label><i class="fas fa-filter"></i> Filtrar por estado:</label>
+        </div>
+        <div class="cell medium-8 small-12">
+            <div class="button-group">
+                <a href="?filtro=todas" class="button {% if filtro == 'todas' or not filtro %}primary{% else %}secondary{% endif %}">
+                    <i class="fas fa-list"></i> Todas
+                </a>
+                <a href="?filtro=programadas" class="button {% if filtro == 'programadas' %}primary{% else %}secondary{% endif %}">
+                    <i class="fas fa-clock"></i> Programadas
+                </a>
+                <a href="?filtro=hoy" class="button {% if filtro == 'hoy' %}primary{% else %}secondary{% endif %}">
+                    <i class="fas fa-calendar-day"></i> Hoy
+                </a>
+                <a href="?filtro=completadas" class="button {% if filtro == 'completadas' %}primary{% else %}secondary{% endif %}">
+                    <i class="fas fa-check-circle"></i> Completadas
+                </a>
+                <a href="?filtro=canceladas" class="button {% if filtro == 'canceladas' %}primary{% else %}secondary{% endif %}">
+                    <i class="fas fa-times-circle"></i> Canceladas
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Tabla de Citas -->
+<div class="callout" style="padding: 0; border: none; background: transparent;">
+    <div style="overflow-x: auto; border-radius: 12px;">
+        <table class="citas-table">
+            <thead>
+                <tr>
+                    <th style="width: 70px;">ID</th>
+                    <th>Paciente</th>
+                    <th>Doctor</th>
+                    <th style="width: 110px;">Fecha</th>
+                    <th style="width: 90px;">Hora</th>
+                    <th style="width: 130px;">Estado</th>
+                    <th style="width: 140px;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cita in citas %}
+                <tr>
+                    <td data-label="ID"><strong>#{{ cita.id }}</strong></td>
+                    
+                    <td data-label="Paciente">
+                        <div class="paciente-avatar">
+                            <div class="avatar-circle">
+                                {{ cita.paciente.nombre|slice:":1"|upper }}
+                            </div>
+                            <div class="paciente-info">
+                                <strong>{{ cita.paciente.nombre }}</strong>
+                                <small>{{ cita.paciente.telefono }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    
+                    <td data-label="Doctor">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-user-md" style="color: #667eea;"></i>
+                            <span>{{ cita.doctor.nombre }}</span>
+                        </div>
+                    </td>
+                    
+                    <td data-label="Fecha">{{ cita.fecha|date:"d/m/Y" }}</td>
+                    <td data-label="Hora" style="text-align: center;">{{ cita.hora|time:"H:i" }}</td>
+                    
+                    <td data-label="Estado" style="text-align: center;">
+                        <span class="badge badge-{{ cita.estado }}">
+                            {{ cita.get_estado_display }}
+                        </span>
+                    </td>
+                    
+                    <td data-label="Acciones" style="text-align: center;">
+                        <div style="display: inline-flex; gap: 4px;">
+                            <a href="{% url 'detalle_cita' cita.id %}" 
+                               class="action-btn primary" 
+                               title="Ver detalle">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            
+                            {% if cita.estado == 'PROGRAMADA' %}
+                                {% if user.rol in 'ADMIN JEFE ASISTENTE' %}
+                                <button type="button"
+                                        class="action-btn alert"
+                                        title="Cancelar cita"
+                                        onclick="abrirModalConfirmacion('cancelar', {{ cita.id }}, '{{ cita.paciente.nombre }}', '{{ cita.fecha|date:"d/m/Y" }}', '{{ cita.hora|time:"H:i" }}')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                {% endif %}
+                                
+                                {% if user.rol in 'ADMIN JEFE MEDICO' %}
+                                <a href="{% url 'completar_cita' cita.id %}" 
+                                   class="action-btn success" 
+                                   title="Completar cita">
+                                    <i class="fas fa-check"></i>
+                                </a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="padding: 60px; text-align: center;">
+                        <i class="fas fa-calendar-times fa-4x" style="color: #ccc;"></i>
+                        <h4 style="color: #666; margin: 20px 0 10px 0;">No hay citas registradas</h4>
+                        <p style="color: #999; margin-bottom: 20px;">
+                            {% if filtro and filtro != 'todas' %}
+                                No hay citas con el filtro "{{ filtro }}"
+                            {% else %}
+                                Comienza agendando tu primera cita
+                            {% endif %}
+                        </p>
+                        {% if user.rol in 'ADMIN JEFE ASISTENTE' %}
+                        <a href="{% url 'crear_cita' %}" class="button primary" style="border-radius: 25px;">
+                            <i class="fas fa-plus"></i> Agendar Primera Cita
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Total -->
+    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: #666;">
+            <i class="fas fa-database"></i> Mostrando <strong>{{ citas|length }}</strong> cita(s)
+        </span>
+        {% if citas %}
+        <small style="color: #999;">
+            <i class="fas fa-info-circle"></i> Click en una cita para ver más detalles
+        </small>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ==================== MODALES DE CONFIRMACIÓN ==================== -->
+
+<!-- Modal Cancelar Cita -->
+<div class="modal-overlay" id="modal-cancelar">
+    <div class="modal-card">
+        <div class="modal-header">
+            <div class="modal-icon warning">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="modal-title">¿Cancelar esta cita?</h3>
+        </div>
+        
+        <div class="modal-body">
+            <p>Esta acción no se puede deshacer. La cita será marcada como <strong>cancelada</strong> y el paciente será notificado.</p>
+            
+            <div class="modal-cita-info">
+                <p><strong>Paciente:</strong> <span id="modal-paciente"></span></p>
+                <p><strong>Fecha:</strong> <span id="modal-fecha"></span></p>
+                <p><strong>Hora:</strong> <span id="modal-hora"></span></p>
+            </div>
+            
+            <p style="color: #856404; font-size: 0.9em;">
+                <i class="fas fa-info-circle"></i> ¿Estás seguro de continuar?
+            </p>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="modal-btn secondary" onclick="cerrarModal('cancelar')">
+                <i class="fas fa-times"></i> No, mantener cita
+            </button>
+            <a href="#" id="btn-confirmar-cancelar" class="modal-btn alert">
+                <i class="fas fa-check"></i> Sí, cancelar cita
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Completar Cita (opcional, si quieres confirmación también) -->
+<div class="modal-overlay" id="modal-completar">
+    <div class="modal-card">
+        <div class="modal-header">
+            <div class="modal-icon success">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="modal-title">¿Completar esta cita?</h3>
+        </div>
+        
+        <div class="modal-body">
+            <p>La cita será marcada como <strong>completada</strong> y podrás agregar el diagnóstico del paciente.</p>
+            
+            <div class="modal-cita-info">
+                <p><strong>Paciente:</strong> <span id="modal-completar-paciente"></span></p>
+                <p><strong>Fecha:</strong> <span id="modal-completar-fecha"></span></p>
+                <p><strong>Hora:</strong> <span id="modal-completar-hora"></span></p>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="modal-btn secondary" onclick="cerrarModal('completar')">
+                <i class="fas fa-times"></i> Cancelar
+            </button>
+            <a href="#" id="btn-confirmar-completar" class="modal-btn success">
+                <i class="fas fa-check"></i> Sí, completar cita
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/**
+ * Abrir modal de confirmación para cancelar cita
+ */
+function abrirModalConfirmacion(tipo, citaId, paciente, fecha, hora) {
+    if (tipo === 'cancelar') {
+        // Llenar datos del modal
+        document.getElementById('modal-paciente').textContent = paciente;
+        document.getElementById('modal-fecha').textContent = fecha;
+        document.getElementById('modal-hora').textContent = hora;
+        
+        // Configurar botón de confirmar
+        document.getElementById('btn-confirmar-cancelar').href = `/citas/${citaId}/cancelar/`;
+        
+        // Mostrar modal
+        document.getElementById('modal-cancelar').classList.add('active');
+        
+        // Prevenir scroll del body
+        document.body.style.overflow = 'hidden';
+    }
+    // Aquí podrías agregar lógica para otros tipos de modal
+}
+
+/**
+ * Cerrar modal
+ */
+function cerrarModal(tipo) {
+    const modalId = `modal-${tipo}`;
+    const modal = document.getElementById(modalId);
+    
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+/**
+ * Cerrar modal al hacer click fuera del contenido
+ */
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            const tipo = this.id.replace('modal-', '');
+            cerrarModal(tipo);
+        }
+    });
+});
+
+/**
+ * Cerrar modal con tecla Escape
+ */
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+            const tipo = modal.id.replace('modal-', '');
+            cerrarModal(tipo);
+        });
+    }
+});
+
+/**
+ * Efecto hover en filas de la tabla (mejora visual)
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar tooltips nativos para mejor accesibilidad
+    document.querySelectorAll('[title]').forEach(el => {
+        el.setAttribute('data-tooltip', el.getAttribute('title'));
+    });
+    
+    // Animación de entrada para las filas
+    document.querySelectorAll('.citas-table tbody tr').forEach((row, index) => {
+        row.style.animation = `slideUp 0.3s ease ${index * 0.05}s forwards`;
+        row.style.opacity = '0';
+        row.style.transform = 'translateY(20px)';
+    });
+    
+    // Agregar keyframes dinámicamente si no existen
+    if (!document.querySelector('#dynamic-animations')) {
+        const style = document.createElement('style');
+        style.id = 'dynamic-animations';
+        style.textContent = `
+            @keyframes slideUp {
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+});
+</script>
+{% endblock %}

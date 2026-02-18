@@ -1,0 +1,970 @@
+{% extends 'core/base.html' %}
+
+{% block titulo %}Expediente - {{ paciente.nombre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #3b82f6;
+    --primary-soft: #dbeafe;
+    --success: #10b981;
+    --success-dark: #059669;
+    --success-soft: #d1fae5;
+    --warning: #f59e0b;
+    --warning-dark: #d97706;
+    --warning-soft: #fef3c7;
+    --danger: #ef4444;
+    --danger-dark: #dc2626;
+    --danger-soft: #fee2e2;
+    --info: #6366f1;
+    --info-soft: #e0e7ff;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --radius-sm: 0.375rem;
+    --radius: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+}
+
+/* Layout General */
+body {
+    background: var(--gray-50);
+}
+
+/* Alertas Modernas */
+.alert-security {
+    background: linear-gradient(135deg, #fff, var(--warning-soft));
+    border: 1px solid var(--warning);
+    border-radius: var(--radius);
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--shadow);
+    color: var(--warning-dark);
+    font-size: 0.95rem;
+}
+
+.alert-security i {
+    font-size: 1.25rem;
+    color: var(--warning);
+}
+
+.alert-security strong {
+    color: var(--warning-dark);
+    font-weight: 600;
+}
+
+.alert-status {
+    background: linear-gradient(135deg, #fff, var(--danger-soft));
+    border: 1px solid var(--danger);
+    border-radius: var(--radius);
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--shadow);
+    color: var(--danger-dark);
+}
+
+.alert-status i {
+    font-size: 1.25rem;
+    color: var(--danger);
+}
+
+/* Header del Paciente */
+.patient-header {
+    background: linear-gradient(135deg, var(--gray-800), var(--gray-900));
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.patient-avatar {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 600;
+    box-shadow: var(--shadow-md);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+}
+
+.patient-info {
+    flex: 1;
+}
+
+.patient-name {
+    color: white;
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+}
+
+.patient-details {
+    color: var(--gray-300);
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+}
+
+.patient-details i {
+    color: var(--primary-light);
+    width: 1.25rem;
+}
+
+.patient-details span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.patient-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* Botones Modernos */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    line-height: 1;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-success {
+    background: var(--success);
+    color: white;
+}
+
+.btn-success:hover {
+    background: var(--success-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: var(--danger-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-warning {
+    background: var(--warning);
+    color: white;
+}
+
+.btn-warning:hover {
+    background: var(--warning-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--gray-300);
+    color: var(--gray-700);
+    box-shadow: none;
+}
+
+.btn-outline:hover {
+    background: var(--gray-50);
+    border-color: var(--gray-400);
+}
+
+/* Cards Modernas */
+.card {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.card-header {
+    background: var(--gray-50);
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.card-header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-header h4 i {
+    color: var(--primary);
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-footer {
+    background: var(--gray-50);
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--gray-200);
+    font-size: 0.875rem;
+    color: var(--gray-600);
+}
+
+/* Info Cards */
+.info-grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.info-item {
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.info-label {
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-label i {
+    color: var(--primary);
+    font-size: 0.9rem;
+}
+
+.info-content {
+    background: var(--gray-50);
+    padding: 1rem;
+    border-radius: var(--radius);
+    color: var(--gray-700);
+    line-height: 1.6;
+    font-size: 0.95rem;
+    border: 1px solid var(--gray-200);
+}
+
+.info-content.alergias {
+    background: var(--warning-soft);
+    color: var(--warning-dark);
+    border-color: var(--warning);
+}
+
+.info-content.medicamentos {
+    background: var(--info-soft);
+    color: var(--info);
+    border-color: var(--info);
+}
+
+/* Metadata */
+.metadata {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--gray-500);
+}
+
+.metadata-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.metadata-item i {
+    color: var(--primary);
+}
+
+/* Badges Modernos */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.5;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.badge-success {
+    background: var(--success-soft);
+    color: var(--success-dark);
+}
+
+.badge-danger {
+    background: var(--danger-soft);
+    color: var(--danger-dark);
+}
+
+.badge-warning {
+    background: var(--warning-soft);
+    color: var(--warning-dark);
+}
+
+.badge-primary {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+}
+
+/* Accordion Moderno */
+.accordion {
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.accordion-item {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.accordion-item:hover {
+    border-color: var(--primary-light);
+}
+
+.accordion-title {
+    display: block;
+    padding: 1rem 1.25rem;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    font-weight: 500;
+    text-decoration: none;
+    position: relative;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.accordion-title:hover {
+    background: var(--gray-100);
+    border-left-color: var(--primary);
+}
+
+.accordion-title .badge {
+    margin-left: 1rem;
+}
+
+.accordion-content {
+    padding: 1.25rem;
+    background: white;
+    border-top: 1px solid var(--gray-200);
+}
+
+/* Grid para diagnóstico */
+.diagnostico-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.diagnostico-section {
+    background: var(--gray-50);
+    padding: 1rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-200);
+}
+
+.diagnostico-section p {
+    margin: 0.5rem 0 0 0;
+    line-height: 1.6;
+}
+
+.diagnostico-actions {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.action-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Sidebar Cards */
+.sidebar-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--gray-200);
+}
+
+.sidebar-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.sidebar-title i {
+    color: var(--primary);
+}
+
+/* Lista sin bullets */
+.no-bullet {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.no-bullet li {
+    padding: 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--gray-600);
+    border-bottom: 1px dashed var(--gray-200);
+}
+
+.no-bullet li:last-child {
+    border-bottom: none;
+}
+
+.no-bullet li i {
+    width: 1.25rem;
+    color: var(--primary);
+}
+
+.no-bullet li strong {
+    color: var(--gray-800);
+    font-weight: 600;
+}
+
+/* Botones verticales */
+.vertical-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.vertical-buttons .btn {
+    width: 100%;
+    justify-content: flex-start;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--gray-500);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: var(--gray-300);
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    margin: 0.5rem 0 1.5rem 0;
+}
+
+/* Confidencialidad */
+.confidencialidad-card {
+    background: linear-gradient(135deg, var(--danger-soft), #fff);
+    border: 1px solid var(--danger);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+}
+
+.confidencialidad-title {
+    color: var(--danger-dark);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.confidencialidad-text {
+    font-size: 0.85rem;
+    color: var(--gray-600);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .patient-header {
+        padding: 1.25rem;
+        gap: 1rem;
+    }
+    
+    .diagnostico-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .patient-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .patient-avatar {
+        margin: 0 auto;
+    }
+    
+    .patient-details {
+        justify-content: center;
+    }
+    
+    .patient-actions {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .metadata {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .diagnostico-actions {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .action-group {
+        width: 100%;
+    }
+    
+    .action-group .btn {
+        flex: 1;
+        text-align: center;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .patient-avatar {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .patient-name {
+        font-size: 1.25rem;
+    }
+    
+    .patient-details {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-start;
+    }
+    
+    .patient-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .action-group {
+        flex-direction: column;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .sidebar-card {
+        padding: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block contenido %}
+<!-- Alerta de Seguridad Modernizada -->
+<div class="alert-security">
+    <i class="fas fa-shield-alt"></i>
+    <div>
+        <strong>Acceso Restringido:</strong> Esta información es confidencial y solo puede ser vista por personal médico autorizado.
+    </div>
+</div>
+
+<!-- Header del Paciente Modernizado -->
+<div class="patient-header">
+    <div class="patient-avatar">
+        {{ paciente.nombre|slice:":1"|upper }}
+    </div>
+    <div class="patient-info">
+        <h1 class="patient-name">{{ paciente.nombre }}</h1>
+        <p class="patient-details">
+            <span><i class="fas fa-birthday-cake"></i> {{ paciente.edad }} años</span>
+            <span><i class="fas fa-phone"></i> {{ paciente.telefono }}</span>
+            <span><i class="fas fa-envelope"></i> {{ paciente.email }}</span>
+        </p>
+    </div>
+    <div class="patient-actions">
+        {% if can_activate_expediente %}
+        <a href="{% url 'activar_expediente' paciente.id %}" class="btn {% if expediente.activo %}btn-danger{% else %}btn-success{% endif %}">
+            <i class="fas fa-{% if expediente.activo %}ban{% else %}check{% endif %}"></i>
+            {% if expediente.activo %}Desactivar{% else %}Activar{% endif %} Expediente
+        </a>
+        {% endif %}
+        {% if can_edit_expediente %}
+        <a href="{% url 'actualizar_expediente' paciente.id %}" class="btn btn-outline">
+            <i class="fas fa-edit"></i> Editar
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Estado del Expediente (si está inactivo) -->
+{% if not expediente.activo %}
+<div class="alert-status">
+    <i class="fas fa-exclamation-triangle"></i>
+    <div style="flex: 1;">
+        <strong>Expediente Desactivado:</strong> Este expediente está marcado como inactivo.
+    </div>
+    {% if can_activate_expediente %}
+    <a href="{% url 'activar_expediente' paciente.id %}" class="btn btn-success btn-sm">
+        <i class="fas fa-check"></i> Activar Ahora
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="grid-x grid-padding-x">
+    <!-- Columna Principal -->
+    <div class="cell medium-8">
+        <!-- Información Clínica -->
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-clipboard-list"></i> Información Clínica</h4>
+            </div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-notes-medical"></i> Observaciones Generales
+                        </div>
+                        <div class="info-content">
+                            {{ expediente.observaciones_generales|default:"Sin observaciones"|linebreaks }}
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-allergies"></i> Alergias
+                        </div>
+                        <div class="info-content alergias">
+                            {{ expediente.alergias|default:"No registradas"|linebreaks }}
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-pills"></i> Medicamentos Actuales
+                        </div>
+                        <div class="info-content medicamentos">
+                            {{ expediente.medicamentos_actuales|default:"No registrados"|linebreaks }}
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-history"></i> Antecedentes
+                        </div>
+                        <div class="info-content">
+                            {{ expediente.antecedentes|default:"Sin antecedentes registrados"|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="metadata">
+                    <span class="metadata-item">
+                        <i class="fas fa-calendar-plus"></i> Apertura: {{ expediente.fecha_apertura|date:"d/m/Y H:i" }}
+                    </span>
+                    <span class="metadata-item">
+                        <i class="fas fa-user"></i> Creado por: {{ expediente.creado_por.username }}
+                    </span>
+                    {% if expediente.modificado_por %}
+                    <span class="metadata-item">
+                        <i class="fas fa-edit"></i> Modificado: {{ expediente.fecha_modificacion|date:"d/m/Y H:i" }} por {{ expediente.modificado_por.username }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Diagnósticos -->
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-stethoscope"></i> Diagnósticos Registrados</h4>
+                {% if can_edit_expediente %}
+                <a href="{% url 'crear_diagnostico' paciente.id %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Nuevo Diagnóstico
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if diagnosticos %}
+                <div class="accordion" data-accordion data-multi-expand="true">
+                    {% for item in diagnosticos %}
+                    {% with diag=item.obj %}
+                    <div class="accordion-item" data-accordion-item>
+                        <a href="#" class="accordion-title">
+                            <strong>{{ diag.diagnostico_principal }}</strong>
+                            <span class="badge {% if diag.activo %}badge-success{% else %}badge-danger{% endif %} float-right">
+                                {{ diag.fecha|date:"d/m/Y" }}
+                            </span>
+                        </a>
+                        <div class="accordion-content" data-tab-content>
+                            <div class="diagnostico-grid">
+                                <div class="diagnostico-section">
+                                    <p><strong><i class="fas fa-user-md"></i> Médico:</strong></p>
+                                    <p>{{ diag.doctor.nombre }} ({{ diag.doctor.get_especialidad_display }})</p>
+                                    
+                                    <p><strong><i class="fas fa-file-medical"></i> Descripción:</strong></p>
+                                    <p>{{ diag.descripcion|linebreaks }}</p>
+                                </div>
+                                
+                                <div class="diagnostico-section">
+                                    <p><strong><i class="fas fa-prescription"></i> Tratamiento:</strong></p>
+                                    <p>{{ diag.tratamiento|linebreaks }}</p>
+                                    
+                                    {% if diag.recomendaciones %}
+                                    <p><strong><i class="fas fa-heart"></i> Recomendaciones:</strong></p>
+                                    <p>{{ diag.recomendaciones|linebreaks }}</p>
+                                    {% endif %}
+                                    
+                                    {% if diag.pronostico %}
+                                    <p><strong><i class="fas fa-chart-line"></i> Pronóstico:</strong></p>
+                                    <p>{{ diag.pronostico|linebreaks }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="diagnostico-actions">
+                                <div class="metadata">
+                                    <span class="metadata-item">
+                                        <i class="fas fa-user"></i> Registrado por: {{ diag.creado_por.username }}
+                                    </span>
+                                    <span class="metadata-item">
+                                        <i class="fas fa-calendar"></i> {{ diag.fecha|date:"d/m/Y H:i" }}
+                                    </span>
+                                    {% if diag.modificado_por %}
+                                    <span class="metadata-item">
+                                        <i class="fas fa-edit"></i> Editado: {{ diag.fecha_modificacion|date:"d/m/Y" }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="action-group">
+                                    {% if item.can_edit %}
+                                    <a href="{% url 'editar_diagnostico' diag.id %}" class="btn btn-outline btn-sm">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </a>
+                                    {% endif %}
+                                    {% if item.can_activate %}
+                                    <a href="{% url 'activar_diagnostico' diag.id %}" class="btn btn-sm {% if diag.activo %}btn-warning{% else %}btn-success{% endif %}">
+                                        <i class="fas fa-{% if diag.activo %}ban{% else %}check{% endif %}"></i>
+                                        {% if diag.activo %}Desactivar{% else %}Activar{% endif %}
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endwith %}
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-clipboard"></i>
+                    <p>No hay diagnósticos registrados para este paciente</p>
+                    {% if can_edit_expediente %}
+                    <a href="{% url 'crear_diagnostico' paciente.id %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Registrar Primer Diagnóstico
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Columna Lateral -->
+    <div class="cell medium-4">
+        <!-- Resumen Rápido -->
+        <div class="sidebar-card">
+            <h5 class="sidebar-title">
+                <i class="fas fa-chart-pie"></i> Resumen
+            </h5>
+            <ul class="no-bullet">
+                <li>
+                    <i class="fas fa-calendar-check"></i>
+                    <span><strong>Expediente:</strong> 
+                        <span class="badge {% if expediente.activo %}badge-success{% else %}badge-danger{% endif %}">
+                            {% if expediente.activo %}Activo{% else %}Inactivo{% endif %}
+                        </span>
+                    </span>
+                </li>
+                <li>
+                    <i class="fas fa-stethoscope"></i>
+                    <span><strong>Diagnósticos:</strong> {{ diagnosticos|length }}</span>
+                </li>
+                <li>
+                    <i class="fas fa-user-md"></i>
+                    <span><strong>Médicos:</strong> {{ diagnosticos|length }} registro(s)</span>
+                </li>
+                <li>
+                    <i class="fas fa-calendar"></i>
+                    <span><strong>Último:</strong> {% if diagnosticos %}{{ diagnosticos.0.obj.fecha|date:"d/m/Y" }}{% else %}N/A{% endif %}</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Acciones Disponibles -->
+        <div class="sidebar-card">
+            <h5 class="sidebar-title">
+                <i class="fas fa-tools"></i> Acciones
+            </h5>
+            <div class="vertical-buttons">
+                <a href="{% url 'detalle_paciente' paciente.id %}" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> Volver al Paciente
+                </a>
+                {% if can_edit_expediente %}
+                <a href="{% url 'actualizar_expediente' paciente.id %}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Editar Expediente
+                </a>
+                <a href="{% url 'crear_diagnostico' paciente.id %}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Nuevo Diagnóstico
+                </a>
+                {% endif %}
+                {% if can_activate_expediente %}
+                <a href="{% url 'activar_expediente' paciente.id %}" class="btn {% if expediente.activo %}btn-danger{% else %}btn-success{% endif %}">
+                    <i class="fas fa-{% if expediente.activo %}ban{% else %}check{% endif %}"></i>
+                    {% if expediente.activo %}Desactivar Expediente{% else %}Activar Expediente{% endif %}
+                </a>
+                {% endif %}
+            </div>
+            
+            {% if user.rol == 'MEDICO' or user.rol == 'JEFE' %}
+            <hr style="margin: 1.5rem 0; border-color: var(--gray-200);">
+            <h6 style="margin-bottom: 1rem; color: var(--gray-700); display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-file-medical" style="color: var(--primary);"></i> Documentos para Paciente
+            </h6>
+            <div class="vertical-buttons">
+                <a href="{% url 'formulario_examenes' paciente.id %}" class="btn btn-outline">
+                    <i class="fas fa-flask"></i> Exámenes de Laboratorio
+                </a>
+                <a href="{% url 'formulario_receta' paciente.id %}" class="btn btn-success">
+                    <i class="fas fa-prescription"></i> Receta Médica
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Nota de Confidencialidad -->
+        <div class="confidencialidad-card">
+            <h6 class="confidencialidad-title">
+                <i class="fas fa-lock"></i> Confidencialidad
+            </h6>
+            <p class="confidencialidad-text">
+                La información médica está protegida por leyes de privacidad.
+                Su acceso queda registrado para auditoría.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,972 @@
+{% extends 'core/base.html' %}
+
+{% block titulo %}Exámenes de Laboratorio - {{ paciente.nombre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --primary: #1a5276;
+    --primary-light: #2e86c1;
+    --primary-lighter: #ebf5fb;
+    --success: #27ae60;
+    --success-light: #d4edda;
+    --warning: #f39c12;
+    --warning-light: #fff3cd;
+    --danger: #e74c3c;
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #6c757d;
+    --gray-700: #495057;
+    --gray-800: #343a40;
+    --gray-900: #212529;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow: 0 4px 6px rgba(0,0,0,0.1);
+    --shadow-md: 0 6px 12px rgba(0,0,0,0.1);
+    --radius: 0.5rem;
+    --radius-sm: 0.375rem;
+}
+
+/* Layout Compacto */
+.dashboard-header {
+    background: linear-gradient(135deg, var(--gray-800), var(--gray-900));
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header-title {
+    color: white;
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.header-title i {
+    color: var(--primary);
+    font-size: 1.5rem;
+}
+
+.patient-badge {
+    color: var(--gray-300);
+    margin: 0.25rem 0 0 0;
+    font-size: 0.9rem;
+}
+
+.patient-badge strong {
+    color: white;
+    font-weight: 600;
+}
+
+/* Buscador */
+.search-section {
+    background: white;
+    border-radius: var(--radius);
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-200);
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.search-box {
+    flex: 1;
+    min-width: 250px;
+    position: relative;
+}
+
+.search-box i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-500);
+    font-size: 1rem;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(26, 82, 118, 0.1);
+}
+
+.search-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--gray-600);
+    font-size: 0.9rem;
+}
+
+.search-badge {
+    background: var(--primary-lighter);
+    color: var(--primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.clear-search {
+    color: var(--gray-500);
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+}
+
+.clear-search:hover {
+    color: var(--danger);
+    background: var(--gray-100);
+}
+
+.search-highlight {
+    background-color: rgba(243, 156, 18, 0.3);
+    font-weight: 500;
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+/* Botones */
+.btn-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.btn-success {
+    background: var(--success);
+    color: white;
+}
+
+.btn-success:hover {
+    background: #219653;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.btn-secondary {
+    background: var(--gray-200);
+    color: var(--gray-700);
+}
+
+.btn-secondary:hover {
+    background: var(--gray-300);
+}
+
+/* Selector de Doctor */
+.doctor-selector {
+    background: white;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.doctor-selector label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin: 0;
+    font-weight: 500;
+    color: var(--gray-700);
+}
+
+.doctor-selector select {
+    flex: 1;
+    min-width: 250px;
+    padding: 0.6rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    color: var(--gray-800);
+    background: white;
+    transition: border-color 0.2s;
+}
+
+.doctor-selector select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(26, 82, 118, 0.1);
+}
+
+/* Grid de Categorías */
+.categorias-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.categoria-card {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+    opacity: 1;
+    transform: scale(1);
+}
+
+.categoria-card.filtrada {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.categoria-card.oculta {
+    display: none;
+}
+
+.categoria-card:hover {
+    box-shadow: var(--shadow);
+    border-color: var(--primary-light);
+}
+
+.categoria-header {
+    background: var(--gray-100);
+    padding: 0.75rem 1rem;
+    border-bottom: 2px solid var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.categoria-header i {
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+.categoria-header h5 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.categoria-header .badge {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--gray-600);
+    background: var(--gray-200);
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+}
+
+.categoria-content {
+    padding: 0.75rem;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+/* Checkboxes */
+.examen-item {
+    display: flex;
+    align-items: center;
+    padding: 0.4rem 0.5rem;
+    margin: 0.125rem 0;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    color: var(--gray-700);
+}
+
+.examen-item:hover {
+    background: var(--primary-lighter);
+}
+
+.examen-item.seleccionado {
+    background: var(--primary-lighter);
+    border-left: 3px solid var(--primary);
+}
+
+.examen-item input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.75rem;
+    cursor: pointer;
+    accent-color: var(--primary);
+}
+
+.examen-item.oculto {
+    display: none;
+}
+
+/* Áreas de Texto */
+.textarea-card {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.textarea-header {
+    background: var(--gray-100);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.textarea-header i {
+    color: var(--primary);
+    font-size: 0.9rem;
+}
+
+.textarea-header label {
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--gray-700);
+}
+
+.textarea-body {
+    padding: 1rem;
+}
+
+.textarea-card textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    resize: vertical;
+    transition: border-color 0.2s;
+}
+
+.textarea-card textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(26, 82, 118, 0.1);
+}
+
+.help-text {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--gray-600);
+}
+
+/* Tarjeta de Personalizados */
+.personalizados-card {
+    background: var(--warning-light);
+    border: 1px solid var(--warning);
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+}
+
+.personalizados-card .textarea-header {
+    background: rgba(243, 156, 18, 0.1);
+    border-bottom-color: var(--warning);
+}
+
+.personalizados-card .textarea-header i {
+    color: var(--warning);
+}
+
+/* Scroll Personalizado */
+.categoria-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.categoria-content::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: 3px;
+}
+
+.categoria-content::-webkit-scrollbar-thumb {
+    background: var(--gray-400);
+    border-radius: 3px;
+}
+
+.categoria-content::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-500);
+}
+
+/* Mensaje sin resultados */
+.no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    background: var(--gray-100);
+    border-radius: var(--radius);
+    color: var(--gray-600);
+    font-size: 1rem;
+}
+
+.no-results i {
+    font-size: 3rem;
+    color: var(--gray-400);
+    margin-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem;
+    }
+    
+    .search-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-info {
+        justify-content: space-between;
+    }
+    
+    .btn-group {
+        width: 100%;
+    }
+    
+    .btn {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .doctor-selector label {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .doctor-selector select {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .categorias-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+    
+    .categoria-content {
+        max-height: 200px;
+    }
+}
+
+/* Estilos de Impresión */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    body {
+        background: white;
+        font-size: 11pt;
+        line-height: 1.4;
+    }
+    
+    #area-impresion {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: white;
+    }
+    
+    .documento-impresion {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 15px;
+    }
+    
+    .documento-impresion h2 {
+        color: #1a5276;
+        font-size: 16pt;
+        margin: 0 0 5px 0;
+    }
+    
+    .documento-impresion .header-print {
+        text-align: center;
+        border-bottom: 2px solid #1a5276;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .documento-impresion .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .documento-impresion ul {
+        margin: 10px 0;
+        padding-left: 20px;
+    }
+    
+    .documento-impresion li {
+        margin: 3px 0;
+    }
+    
+    .documento-impresion .observaciones {
+        background: #f8f9fa;
+        border-left: 3px solid #f39c12;
+        padding: 8px;
+        margin: 15px 0;
+        font-size: 10pt;
+    }
+    
+    .documento-impresion .firma {
+        margin-top: 30px;
+        text-align: right;
+    }
+    
+    .documento-impresion .footer {
+        margin-top: 20px;
+        font-size: 8pt;
+        color: #666;
+        text-align: center;
+        border-top: 1px solid #ddd;
+        padding-top: 8px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block contenido %}
+<!-- Encabezado Compacto -->
+<div class="dashboard-header no-print">
+    <div>
+        <h2 class="header-title">
+            <i class="fas fa-flask"></i> Exámenes de Laboratorio
+        </h2>
+        <p class="patient-badge">
+            <i class="fas fa-user"></i> <strong>{{ paciente.nombre }}</strong> 
+            <span class="separator">|</span> CI: {{ paciente.ci }}
+            {% if paciente.edad %} <span class="separator">|</span> {{ paciente.edad }} años {% endif %}
+            {% if paciente.sexo %} <span class="separator">|</span> {{ paciente.get_sexo_display }} {% endif %}
+        </p>
+    </div>
+    <div class="btn-group">
+        <button type="button" class="btn btn-success" onclick="prepararImpresionExamenes()">
+            <i class="fas fa-print"></i> <span>Imprimir</span>
+        </button>
+        <a href="{% url 'ver_expediente' paciente.id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> <span>Volver</span>
+        </a>
+    </div>
+</div>
+
+<!-- Buscador de Exámenes -->
+<div class="search-section no-print">
+    <div class="search-container">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" 
+                   id="buscador-examenes" 
+                   placeholder="Buscar exámenes por nombre, categoría... (Presiona '/' para enfocar)"
+                   autocomplete="off">
+        </div>
+        <div class="search-info">
+            <span class="search-badge" id="resultados-count">
+                <span id="examenes-visibles">0</span>/<span id="examenes-totales">0</span> exámenes
+            </span>
+            <span class="clear-search" id="limpiar-busqueda" title="Limpiar búsqueda">
+                <i class="fas fa-times"></i>
+            </span>
+        </div>
+    </div>
+    <div style="font-size: 0.8rem; color: var(--gray-500); margin-top: 0.5rem;">
+        <i class="fas fa-filter"></i> Las tarjetas que no contengan coincidencias se ocultarán automáticamente
+    </div>
+</div>
+
+<!-- Formulario Compacto -->
+<form id="form-examenes" method="post" action="{% url 'imprimir_examenes' paciente.id %}" target="_blank">
+    {% csrf_token %}
+    
+    <!-- Doctor Solicitante Compacto -->
+    {% if user.rol == 'JEFE' %}
+    <div class="doctor-selector no-print">
+        <label>
+            <i class="fas fa-user-md" style="color: var(--primary);"></i>
+            <strong>Doctor Solicitante:</strong>
+            <select name="doctor_solicitante" id="doctor-select">
+                <option value="">Seleccionar doctor...</option>
+                {% for doctor in doctores %}
+                <option value="{{ doctor.id }}" {% if doctor_solicitante and doctor_solicitante.id == doctor.id %}selected{% endif %}>
+                    {{ doctor.nombre }} - {{ doctor.get_especialidad_display }}
+                </option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+    {% else %}
+    <input type="hidden" name="doctor_solicitante" value="{{ doctor_solicitante.id }}">
+    {% endif %}
+    
+    <!-- Grid de Categorías de Exámenes -->
+    <div class="categorias-grid" id="categorias-grid">
+        {% for categoria, lista_examenes in examenes.items %}
+        <div class="categoria-card" data-categoria="{{ categoria }}">
+            <div class="categoria-header">
+                <i class="fas fa-folder-open"></i>
+                <h5>{{ categoria }}</h5>
+                <span class="badge" id="badge-{{ forloop.counter }}">{{ lista_examenes|length }}</span>
+            </div>
+            <div class="categoria-content">
+                {% for examen in lista_examenes %}
+                <label class="examen-item" data-examen="{{ examen }}">
+                    <input type="checkbox" name="examenes" value="{{ examen }}">
+                    {{ examen }}
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Exámenes Personalizados Compactos -->
+    <div class="personalizados-card no-print">
+        <div class="textarea-header">
+            <i class="fas fa-plus-circle"></i>
+            <label>Exámenes Personalizados / Especiales</label>
+        </div>
+        <div class="textarea-body">
+            <textarea name="examenes_personalizados" id="examenes-personalizados" rows="3" 
+                      placeholder="Escribe aquí exámenes que no están en la lista..."></textarea>
+            <small class="help-text">
+                <i class="fas fa-info-circle"></i> Un examen por línea
+            </small>
+        </div>
+    </div>
+    
+    <!-- Observaciones Compactas -->
+    <div class="textarea-card no-print">
+        <div class="textarea-header">
+            <i class="fas fa-sticky-note"></i>
+            <label>Observaciones / Indicaciones</label>
+        </div>
+        <div class="textarea-body">
+            <textarea name="observaciones" id="observaciones" rows="2" 
+                      placeholder="Ej: Paciente en ayunas, Suspender medicamentos X..."></textarea>
+        </div>
+    </div>
+    
+    <!-- Área de Impresión (oculta) -->
+    <div id="area-impresion" style="display: none;"></div>
+</form>
+
+<!-- Template para mensaje sin resultados -->
+<template id="no-results-template">
+    <div class="no-results">
+        <i class="fas fa-search"></i>
+        <h4>No se encontraron exámenes</h4>
+        <p>Intenta con otros términos de búsqueda</p>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos del DOM
+    const buscador = document.getElementById('buscador-examenes');
+    const categoriasGrid = document.getElementById('categorias-grid');
+    const examenesVisibles = document.getElementById('examenes-visibles');
+    const examenesTotales = document.getElementById('examenes-totales');
+    const limpiarBtn = document.getElementById('limpiar-busqueda');
+    
+    // Obtener todos los exámenes y categorías
+    const categorias = document.querySelectorAll('.categoria-card');
+    const todosExamenes = document.querySelectorAll('.examen-item');
+    
+    // Actualizar contador total
+    examenesTotales.textContent = todosExamenes.length;
+    
+    // Función para normalizar texto (quitar acentos y minúsculas)
+    function normalizarTexto(texto) {
+        return texto.toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+    }
+    
+    // Función para resaltar coincidencias
+    function resaltarCoincidencia(texto, busqueda) {
+        if (!busqueda) return texto;
+        
+        const regex = new RegExp(`(${busqueda})`, 'gi');
+        return texto.replace(regex, '<span class="search-highlight">$1</span>');
+    }
+    
+    // Función principal de filtrado
+    function filtrarExamenes() {
+        const busqueda = normalizarTexto(buscador.value);
+        let examenesVisiblesCount = 0;
+        
+        // Procesar cada categoría
+        categorias.forEach(categoria => {
+            const examenes = categoria.querySelectorAll('.examen-item');
+            let categoriaTieneCoincidencias = false;
+            
+            // Verificar si el nombre de la categoría coincide
+            const categoriaNombre = categoria.dataset.categoria || '';
+            const categoriaCoincide = busqueda === '' || normalizarTexto(categoriaNombre).includes(busqueda);
+            
+            // Procesar cada examen en la categoría
+            examenes.forEach(examen => {
+                const examenTexto = examen.dataset.examen || examen.textContent.trim();
+                const examenNormalizado = normalizarTexto(examenTexto);
+                const coincide = busqueda === '' || examenNormalizado.includes(busqueda);
+                
+                if (coincide) {
+                    examen.classList.remove('oculto');
+                    examenesVisiblesCount++;
+                    categoriaTieneCoincidencias = true;
+                    
+                    // Resaltar texto si hay búsqueda
+                    if (busqueda) {
+                        const textoOriginal = examenTexto;
+                        const textoResaltado = resaltarCoincidencia(textoOriginal, busqueda);
+                        // Nota: No modificamos el HTML directamente para mantener los checkboxes
+                        // Podríamos agregar un span, pero por simplicidad solo filtramos
+                    }
+                } else {
+                    examen.classList.add('oculto');
+                }
+            });
+            
+            // Mostrar/ocultar categoría basado en si tiene coincidencias o el nombre coincide
+            if (categoriaTieneCoincidencias || categoriaCoincide) {
+                categoria.classList.remove('oculta');
+            } else {
+                categoria.classList.add('oculta');
+            }
+        });
+        
+        // Actualizar contador de exámenes visibles
+        examenesVisibles.textContent = examenesVisiblesCount;
+        
+        // Mostrar mensaje si no hay resultados
+        const noResults = document.querySelector('.no-results');
+        if (examenesVisiblesCount === 0 && busqueda !== '') {
+            if (!noResults) {
+                const template = document.getElementById('no-results-template');
+                const clone = template.content.cloneNode(true);
+                categoriasGrid.appendChild(clone);
+            }
+        } else {
+            if (noResults) {
+                noResults.remove();
+            }
+        }
+    }
+    
+    // Event listener para el buscador
+    buscador.addEventListener('input', filtrarExamenes);
+    
+    // Limpiar búsqueda
+    limpiarBtn.addEventListener('click', function() {
+        buscador.value = '';
+        filtrarExamenes();
+        buscador.focus();
+    });
+    
+    // Atajo de teclado: '/' para enfocar el buscador
+    document.addEventListener('keydown', function(e) {
+        if (e.key === '/' && document.activeElement !== buscador) {
+            e.preventDefault();
+            buscador.focus();
+        }
+    });
+    
+    // Atajo de teclado: Ctrl+P para imprimir
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'p') {
+            e.preventDefault();
+            prepararImpresionExamenes();
+        }
+    });
+    
+    // Ejecutar filtro inicial
+    filtrarExamenes();
+});
+
+function prepararImpresionExamenes() {
+    const form = document.getElementById('form-examenes');
+    const areaImpresion = document.getElementById('area-impresion');
+    
+    // Validar selección mínima
+    const examenesSeleccionados = Array.from(document.querySelectorAll('input[name="examenes"]:checked'))
+        .map(cb => cb.value);
+    
+    const personalizados = document.querySelector('textarea[name="examenes_personalizados"]').value;
+    
+    if (examenesSeleccionados.length === 0 && !personalizados.trim()) {
+        alert('Por favor selecciona al menos un examen o ingresa exámenes personalizados.');
+        return;
+    }
+    
+    // Obtener datos
+    const observaciones = document.querySelector('textarea[name="observaciones"]').value;
+    const doctorSelect = document.querySelector('select[name="doctor_solicitante"]');
+    let doctorNombre = '{{ doctor_solicitante.nombre|default:"" }}';
+    
+    if (doctorSelect && doctorSelect.value) {
+        doctorNombre = doctorSelect.options[doctorSelect.selectedIndex].text.split(' - ')[0];
+    }
+    
+    // Generar HTML para impresión
+    const fecha = new Date().toLocaleDateString('es-VE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+    
+    let examenesHTML = '';
+    examenesSeleccionados.forEach(examen => {
+        examenesHTML += `<li>☐ ${examen}</li>`;
+    });
+    
+    let personalizadosHTML = '';
+    if (personalizados.trim()) {
+        personalizados.split('\n')
+            .filter(linea => linea.trim())
+            .forEach(linea => {
+                personalizadosHTML += `<li>☐ ${linea.trim()}</li>`;
+            });
+    }
+    
+    const html = `
+        <div class="documento-impresion">
+            <div class="header-print">
+                <h2>SOLICITUD DE EXÁMENES DE LABORATORIO</h2>
+                <p style="margin:0; color:#666;">Consultorio Médico</p>
+            </div>
+            
+            <div class="info-grid">
+                <div><strong>Paciente:</strong> {{ paciente.nombre }}</div>
+                <div><strong>Cédula:</strong> {{ paciente.ci }}</div>
+                <div><strong>Edad:</strong> {{ paciente.edad|default:"-" }} años</div>
+                <div><strong>Sexo:</strong> {{ paciente.get_sexo_display|default:"-" }}</div>
+                <div><strong>Fecha:</strong> ${fecha}</div>
+                <div><strong>Doctor:</strong> ${doctorNombre}</div>
+            </div>
+            
+            <h4 style="margin:15px 0 5px 0;">Exámenes Solicitados:</h4>
+            <ul style="list-style:none; padding-left:0;">
+                ${examenesHTML}
+                ${personalizadosHTML}
+            </ul>
+            
+            ${observaciones ? `
+                <div class="observaciones">
+                    <strong>Observaciones:</strong><br>
+                    ${observaciones.replace(/\n/g, '<br>')}
+                </div>
+            ` : ''}
+            
+            <div class="firma">
+                <p>_______________________________<br>
+                <strong>Firma y Sello del Médico</strong></p>
+            </div>
+            
+            <div class="footer">
+                Documento generado el ${new Date().toLocaleString('es-VE')}
+            </div>
+        </div>
+    `;
+    
+    areaImpresion.innerHTML = html;
+    
+    // Abrir ventana de impresión
+    const ventana = window.open('', '_blank', 'width=800,height=600');
+    ventana.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Exámenes - {{ paciente.nombre }}</title>
+            <style>
+                body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+                @media print {
+                    body { padding: 0; }
+                }
+            </style>
+        </head>
+        <body>${html}</body>
+        </html>
+    `);
+    ventana.document.close();
+    ventana.focus();
+    setTimeout(() => { 
+        ventana.print(); 
+        ventana.close(); 
+    }, 500);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,258 @@
+{% extends 'core/base.html' %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+
+{% block contenido %}
+<div class="grid-x grid-padding-x">
+    <div class="cell medium-10 large-8">
+        <div class="callout">
+            <h3><i class="fas fa-user-cog"></i> {{ titulo }}</h3>
+            <hr>
+            
+            <!-- Alerta de Seguridad -->
+            <div class="callout warning" style="margin-bottom: 20px;">
+                <i class="fas fa-shield-alt"></i>
+                <strong>Información Sensible:</strong> Estás creando o modificando credenciales de acceso al sistema.
+                {% if accion == 'crear' %}
+                La contraseña debe tener al menos 8 caracteres.
+                {% else %}
+                Deja los campos de contraseña vacíos para mantener la actual.
+                {% endif %}
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="grid-x grid-padding-x">
+                    <!-- Username -->
+                    <div class="cell medium-6">
+                        <label>{{ form.username.label }}
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                                <small class="error">{{ form.username.errors.0 }}</small>
+                            {% endif %}
+                            <small class="help-text">Solo letras minúsculas, números, puntos y guiones bajos</small>
+                        </label>
+                    </div>
+                    
+                    <!-- Email -->
+                    <div class="cell medium-6">
+                        <label>{{ form.email.label }}
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <small class="error">{{ form.email.errors.0 }}</small>
+                            {% endif %}
+                        </label>
+                    </div>
+                    
+                    <!-- Nombre -->
+                    <div class="cell medium-6">
+                        <label>{{ form.first_name.label }}
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <small class="error">{{ form.first_name.errors.0 }}</small>
+                            {% endif %}
+                        </label>
+                    </div>
+                    
+                    <!-- Apellido -->
+                    <div class="cell medium-6">
+                        <label>{{ form.last_name.label }}
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <small class="error">{{ form.last_name.errors.0 }}</small>
+                            {% endif %}
+                        </label>
+                    </div>
+                    
+                    <!-- Teléfono -->
+                    <div class="cell medium-6">
+                        <label>{{ form.telefono.label }}
+                            {{ form.telefono }}
+                            {% if form.telefono.errors %}
+                                <small class="error">{{ form.telefono.errors.0 }}</small>
+                            {% endif %}
+                        </label>
+                    </div>
+                    
+                    <!-- Rol -->
+                    <div class="cell medium-6">
+                        <label>{{ form.rol.label }}
+                            {{ form.rol }}
+                            {% if form.rol.errors %}
+                                <small class="error">{{ form.rol.errors.0 }}</small>
+                            {% endif %}
+                            {% if user_request.rol != 'ADMIN' %}
+                            <small class="help-text" style="color: #c0392b;">
+                                <i class="fas fa-lock"></i> Solo ADMIN puede asignar rol Administrador
+                            </small>
+                            {% endif %}
+                        </label>
+                    </div>
+                    
+                    <!-- Contraseña (solo en creación o cambio) -->
+                    <div class="cell medium-6">
+                        <label>{{ form.password1.label }}
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}
+                                <small class="error">{{ form.password1.errors.0 }}</small>
+                            {% endif %}
+                            <small class="help-text">
+                                {% if accion == 'crear' %}
+                                    Obligatorio para nuevos usuarios
+                                {% else %}
+                                    Dejar vacío para mantener la actual
+                                {% endif %}
+                            </small>
+                        </label>
+                    </div>
+                    
+                    <div class="cell medium-6">
+                        <label>{{ form.password2.label }}
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}
+                                <small class="error">{{ form.password2.errors.0 }}</small>
+                            {% endif %}
+                            <small class="help-text">Repite la contraseña</small>
+                        </label>
+                    </div>
+                    
+                    <!-- Estado Activo -->
+                    <div class="cell medium-12">
+                        <label class="switch" style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
+                            {{ form.is_active }}
+                            <span class="switch-paddle"></span>
+                            <strong>{{ form.is_active.label }}</strong>
+                        </label>
+                        {% if form.is_active.errors %}
+                            <small class="error">{{ form.is_active.errors.0 }}</small>
+                        {% endif %}
+                        <small class="help-text">{{ form.is_active.help_text }}</small>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <!-- Metadata (solo edición) -->
+                {% if accion == 'editar' and usuario_editando %}
+                <div class="callout secondary" style="margin-bottom: 20px;">
+                    <small style="color: #666;">
+                        <i class="fas fa-user"></i> Usuario: {{ usuario_editando.username }} |
+                        <i class="fas fa-calendar-plus"></i> Creado: {{ usuario_editando.date_joined|date:"d/m/Y" }} |
+                        {% if usuario_editando.last_login %}
+                        <i class="fas fa-sign-in-alt"></i> Último acceso: {{ usuario_editando.last_login|date:"d/m/Y H:i" }}
+                        {% else %}
+                        <i class="fas fa-sign-in-alt"></i> Nunca ha iniciado sesión
+                        {% endif %}
+                    </small>
+                </div>
+                {% endif %}
+                
+                <!-- Botones de Acción -->
+                <div class="grid-x grid-padding-x">
+                    <div class="cell">
+                        <a href="{% url 'lista_staff' %}" class="button secondary">
+                            <i class="fas fa-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="button primary float-right">
+                            <i class="fas fa-save"></i> Guardar Usuario
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Panel de Ayuda -->
+    <div class="cell medium-2 large-4">
+        <div class="callout info">
+            <h6><i class="fas fa-info-circle"></i> Información</h6>
+            <ul class="no-bullet" style="font-size: 0.9em;">
+                <li><i class="fas fa-check"></i> Username: único, sin espacios</li>
+                <li><i class="fas fa-check"></i> Email: debe ser válido y único</li>
+                <li><i class="fas fa-check"></i> Contraseña: mínimo 8 caracteres</li>
+                <li><i class="fas fa-check"></i> Rol: define permisos del usuario</li>
+                <li><i class="fas fa-check"></i> Activo: controla acceso al sistema</li>
+            </ul>
+        </div>
+        
+        <div class="callout warning" style="margin-top: 15px;">
+            <h6><i class="fas fa-key"></i> Seguridad</h6>
+            <p style="font-size: 0.85em;">
+                Comparte las credenciales de forma segura. 
+                El usuario debe cambiar su contraseña al primer inicio de sesión.
+            </p>
+        </div>
+        
+        {% if accion == 'crear' %}
+        <div class="callout success" style="margin-top: 15px;">
+            <h6><i class="fas fa-lightbulb"></i> Tip</h6>
+            <p style="font-size: 0.85em;">
+                Después de crear el usuario, puedes vincularlo a un doctor 
+                desde la sección de Doctores → Vincular Usuario.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Estilos para el formulario -->
+<style>
+    /* Textareas e inputs con mejor apariencia */
+    textarea.input-group-field,
+    input.input-group-field {
+        min-height: 2.5rem;
+    }
+    
+    /* Switch de Foundation */
+    .switch {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 10px 0;
+    }
+    
+    .switch-paddle {
+        background: #ccc;
+        transition: background 0.2s ease;
+    }
+    
+    .switch input:checked ~ .switch-paddle {
+        background: #27ae60;
+    }
+    
+    /* Help text */
+    .help-text {
+        display: block;
+        margin-top: 4px;
+        color: #666;
+        font-style: italic;
+        font-size: 0.85em;
+    }
+    
+    /* Error messages */
+    .error {
+        color: #c0392b;
+        font-weight: 500;
+        display: block;
+        margin-top: 4px;
+        font-size: 0.9em;
+    }
+    
+    /* Label con asterisco */
+    label:has(.error),
+    label:has(.help-text) {
+        display: block;
+    }
+</style>
+
+<!-- Script para inicializar Foundation Switch -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof Foundation !== 'undefined') {
+        // Re-inicializar componentes si es necesario
+        Foundation.reInit('switch');
+    }
+});
+</script>
+{% endblock %}

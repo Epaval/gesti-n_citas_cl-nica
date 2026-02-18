@@ -1,0 +1,1512 @@
+{% extends 'core/base.html' %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-soft: #dbeafe;
+    --success: #10b981;
+    --success-soft: #d1fae5;
+    --warning: #f59e0b;
+    --warning-soft: #fef3c7;
+    --danger: #ef4444;
+    --danger-soft: #fee2e2;
+    --info: #3b82f6;
+    --info-soft: #e0f2fe;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --radius-sm: 0.375rem;
+    --radius: 0.5rem;
+    --radius-lg: 0.75rem;
+}
+
+/* Layout principal */
+body {
+    background: var(--gray-50);
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Card principal */
+.form-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+}
+
+.form-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--gray-800), var(--gray-900));
+    padding: 1.5rem 2rem;
+    color: white;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.card-header h3 i {
+    color: var(--primary);
+    font-size: 1.5rem;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+.card-footer {
+    background: var(--gray-50);
+    padding: 1.5rem 2rem;
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+/* Grid del formulario */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+
+.form-group.full-width {
+    grid-column: span 2;
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.form-label i {
+    color: var(--primary);
+    font-size: 0.9rem;
+    width: 1.25rem;
+}
+
+/* Search Container */
+.search-container {
+    position: relative;
+    width: 100%;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    color: var(--gray-800);
+    background: white;
+    transition: all 0.2s ease;
+    line-height: 1.5;
+}
+
+.search-input:hover {
+    border-color: var(--gray-400);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    background: white;
+}
+
+.search-input.error {
+    border-color: var(--danger);
+    background: var(--danger-soft);
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-400);
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+    pointer-events: none;
+}
+
+.search-input:focus + .search-icon {
+    color: var(--primary);
+}
+
+.search-clear {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-400);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: none;
+    background: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-clear:hover {
+    color: var(--danger);
+    background: var(--gray-100);
+}
+
+.search-container:hover .search-clear,
+.search-input:focus + .search-icon + .search-clear {
+    display: flex;
+}
+
+/* Dropdown de resultados */
+.search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    margin-top: 0.25rem;
+    display: none;
+}
+
+.search-dropdown.active {
+    display: block;
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item:hover {
+    background: var(--primary-soft);
+}
+
+.dropdown-item.selected {
+    background: var(--primary-soft);
+    border-left: 3px solid var(--primary);
+}
+
+.item-avatar {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.item-info {
+    flex: 1;
+}
+
+.item-title {
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.item-subtitle {
+    font-size: 0.8rem;
+    color: var(--gray-500);
+    display: flex;
+    gap: 1rem;
+}
+
+.item-subtitle span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.item-subtitle i {
+    font-size: 0.7rem;
+    color: var(--primary);
+}
+
+/* Resultado seleccionado */
+.selected-item {
+    background: var(--primary-soft);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid var(--primary);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.selected-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.selected-avatar {
+    width: 32px;
+    height: 32px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.selected-details {
+    font-size: 0.9rem;
+}
+
+.selected-name {
+    font-weight: 600;
+    color: var(--gray-800);
+}
+
+.selected-id {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+}
+
+.selected-remove {
+    color: var(--danger);
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+}
+
+.selected-remove:hover {
+    background: var(--danger-soft);
+}
+
+/* Loading spinner en dropdown */
+.dropdown-loading {
+    padding: 1rem;
+    text-align: center;
+    color: var(--gray-500);
+}
+
+.dropdown-loading i {
+    animation: spin 1s linear infinite;
+}
+
+/* Mensajes de validación */
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--danger);
+    font-size: 0.8rem;
+    margin-top: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: var(--danger-soft);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--danger);
+}
+
+.validation-message {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--warning);
+    font-size: 0.8rem;
+    margin-top: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: var(--warning-soft);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--warning);
+}
+
+.validation-message.success {
+    color: var(--success);
+    background: var(--success-soft);
+    border-left-color: var(--success);
+}
+
+/* Horarios disponibles */
+.horarios-info {
+    background: var(--info-soft);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-top: 1rem;
+    border: 1px solid var(--info);
+}
+
+.horarios-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--info);
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.horarios-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.horario-item {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 0 0 auto;
+}
+
+.horario-item:hover:not(.disabled) {
+    background: var(--info);
+    color: white;
+    border-color: var(--info);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.horario-item.disabled {
+    background: var(--gray-100);
+    color: var(--gray-400);
+    cursor: not-allowed;
+    border-color: var(--gray-200);
+}
+
+/* Botones */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    line-height: 1;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: var(--gray-200);
+    color: var(--gray-700);
+}
+
+.btn-secondary:hover {
+    background: var(--gray-300);
+    transform: translateY(-1px);
+}
+
+/* Sidebar de ayuda */
+.help-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--gray-200);
+}
+
+.help-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.help-title i {
+    color: var(--primary);
+}
+
+.help-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem 0;
+}
+
+.help-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    color: var(--gray-600);
+    font-size: 0.9rem;
+}
+
+.help-item i {
+    color: var(--success);
+    width: 1.25rem;
+    font-size: 0.9rem;
+}
+
+.horario-card {
+    background: var(--primary-soft);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.horario-card p {
+    margin: 0.25rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--primary-dark);
+    font-size: 0.9rem;
+}
+
+.horario-card i {
+    width: 1.25rem;
+}
+
+/* Hidden input para guardar ID */
+.hidden-id {
+    display: none;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .card-header,
+    .card-body,
+    .card-footer {
+        padding: 1.25rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .form-group.full-width {
+        grid-column: span 1;
+    }
+    
+    .horarios-grid {
+        justify-content: center;
+    }
+    
+    .horario-item {
+        flex: 1 1 auto;
+        text-align: center;
+    }
+    
+    .card-footer {
+        flex-direction: column;
+    }
+    
+    .card-footer .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .dropdown-item {
+        padding: 0.625rem;
+    }
+    
+    .item-avatar {
+        width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-header h3 {
+        font-size: 1.1rem;
+    }
+    
+    .form-label {
+        font-size: 0.8rem;
+    }
+    
+    .search-input {
+        padding: 0.625rem 0.875rem 0.625rem 2.25rem;
+        font-size: 0.9rem;
+    }
+    
+    .horario-item {
+        flex: 1 1 calc(50% - 0.5rem);
+    }
+    
+    .help-item {
+        font-size: 0.85rem;
+    }
+    
+    .selected-item {
+        padding: 0.625rem;
+    }
+}
+
+/* Loading state */
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+    position: relative;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid var(--gray-200);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Indicador de disponibilidad */
+.disponibilidad-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    background: var(--gray-100);
+    border-radius: var(--radius-sm);
+    color: var(--gray-600);
+}
+
+.disponibilidad-indicator i {
+    color: var(--success);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Configuración del horario laboral
+    const HORARIO_LABORAL = {
+        inicio: 7, // 7 AM
+        fin: 18,   // 6 PM
+        diasLaborales: [1, 2, 3, 4, 5] // Lunes=1, Martes=2, Miércoles=3, Jueves=4, Viernes=5
+    };
+
+    // Elementos del DOM
+    const fechaInput = $('#id_fecha');
+    const horaInput = $('#id_hora');
+    const form = $('form');
+    
+    // Timeouts para debounce
+    let pacienteTimeout = null;
+    let doctorTimeout = null;
+
+    // ============================================
+    // BÚSQUEDA DE PACIENTES
+    // ============================================
+    const pacienteSearch = $('#paciente-search');
+    const pacienteDropdown = $('#paciente-dropdown');
+    const pacienteSelected = $('#paciente-selected');
+    const pacienteIdInput = $('#id_paciente');
+    const pacienteClear = $('#paciente-clear');
+    
+    // Función para seleccionar paciente
+    window.seleccionarPaciente = function(id, nombre, ci, telefono) {
+        
+        pacienteIdInput.val(id);
+        
+        // Actualizar campo de búsqueda
+        pacienteSearch.val(nombre);
+        
+        // Mostrar elemento seleccionado
+        const iniciales = nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        pacienteSelected.html(`
+            <div class="selected-info">
+                <div class="selected-avatar">${iniciales}</div>
+                <div class="selected-details">
+                    <div class="selected-name">${nombre}</div>
+                    <div class="selected-id">CI: ${ci} | Tel: ${telefono}</div>
+                </div>
+            </div>
+            <div class="selected-remove" id="remove-paciente">
+                <i class="fas fa-times"></i>
+            </div>
+        `).show();
+        
+        // Ocultar dropdown y botón de limpiar
+        pacienteDropdown.removeClass('active');
+        pacienteClear.hide();
+        
+        // Quitar clase error si existía
+        pacienteSearch.removeClass('error');
+    };
+    
+    function limpiarSeleccionPaciente() {
+        pacienteSearch.val('').focus();
+        pacienteIdInput.val('');
+        pacienteSelected.hide();
+        pacienteClear.hide();
+    }
+    
+    function buscarPacientes(termino) {
+        
+        pacienteDropdown.html('<div class="dropdown-loading"><i class="fas fa-spinner"></i> Buscando pacientes...</div>');
+        pacienteDropdown.addClass('active');
+        
+        $.ajax({
+            url: '/api/pacientes/buscar/',
+            method: 'GET',
+            data: { q: termino },
+            success: function(data) {
+               
+                
+                // Verificar diferentes formatos posibles de respuesta
+                let pacientes = [];
+                
+                if (data.results && Array.isArray(data.results)) {
+                    pacientes = data.results;
+                } else if (data.pacientes && Array.isArray(data.pacientes)) {
+                    pacientes = data.pacientes;
+                } else if (data.data && Array.isArray(data.data)) {
+                    pacientes = data.data;
+                } else if (Array.isArray(data)) {
+                    pacientes = data;
+                }
+                
+                if (pacientes.length > 0) {
+                    mostrarResultadosPacientes(pacientes);
+                } else {
+                    pacienteDropdown.html('<div class="dropdown-item" style="justify-content: center; color: var(--gray-500);">No se encontraron pacientes</div>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error en búsqueda de pacientes:', error);
+                console.error('Respuesta del servidor:', xhr.responseText);
+                pacienteDropdown.html('<div class="dropdown-item" style="justify-content: center; color: var(--danger);">Error al buscar. Intente de nuevo.</div>');
+            }
+        });
+    }
+    
+    function mostrarResultadosPacientes(pacientes) {
+        let html = '';
+        pacientes.forEach(p => {
+            const iniciales = p.nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            html += `
+                <div class="dropdown-item" data-id="${p.id}" data-nombre="${p.nombre}" data-ci="${p.ci}" data-telefono="${p.telefono}">
+                    <div class="item-avatar">${iniciales}</div>
+                    <div class="item-info">
+                        <div class="item-title">${p.nombre}</div>
+                        <div class="item-subtitle">
+                            <span><i class="fas fa-id-card"></i> ${p.ci}</span>
+                            <span><i class="fas fa-phone"></i> ${p.telefono}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        pacienteDropdown.html(html);
+        
+        // Agregar evento click a cada resultado
+        $('.dropdown-item').on('click', function() {
+            const id = $(this).data('id');
+            const nombre = $(this).data('nombre');
+            const ci = $(this).data('ci');
+            const telefono = $(this).data('telefono');
+            window.seleccionarPaciente(id, nombre, ci, telefono);
+        });
+    }
+    
+    // Buscar pacientes mientras escribe
+    pacienteSearch.on('input', function() {
+        const termino = $(this).val().trim();
+        
+        // Mostrar/ocultar botón de limpiar
+        if (termino.length > 0) {
+            pacienteClear.show();
+        } else {
+            pacienteClear.hide();
+        }
+        
+        // Limpiar timeout anterior
+        clearTimeout(pacienteTimeout);
+        
+        if (termino.length < 2) {
+            pacienteDropdown.removeClass('active');
+            return;
+        }
+        
+        // Debounce para no sobrecargar el servidor
+        pacienteTimeout = setTimeout(function() {
+            buscarPacientes(termino);
+        }, 300);
+    });
+    
+    pacienteClear.on('click', function() {
+        limpiarSeleccionPaciente();
+    });
+    
+    // Cerrar dropdown al hacer clic fuera
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('#paciente-search, #paciente-dropdown').length) {
+            pacienteDropdown.removeClass('active');
+        }
+    });
+
+    // ============================================
+    // BÚSQUEDA DE DOCTORES (adaptada a tu API)
+    // ============================================
+    const doctorSearch = $('#doctor-search');
+    const doctorDropdown = $('#doctor-dropdown');
+    const doctorSelected = $('#doctor-selected');
+    const doctorIdInput = $('#id_doctor');
+    const doctorClear = $('#doctor-clear');
+    
+    // Función para seleccionar doctor
+    window.seleccionarDoctor = function(id, nombre, especialidad, telefono) {
+         
+        doctorIdInput.val(id);
+        
+        // Actualizar campo de búsqueda
+        doctorSearch.val(nombre);
+        
+        // Mostrar elemento seleccionado
+        const iniciales = nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        doctorSelected.html(`
+            <div class="selected-info">
+                <div class="selected-avatar">${iniciales}</div>
+                <div class="selected-details">
+                    <div class="selected-name">${nombre}</div>
+                    <div class="selected-id">${especialidad} | Tel: ${telefono}</div>
+                </div>
+            </div>
+            <div class="selected-remove" id="remove-doctor">
+                <i class="fas fa-times"></i>
+            </div>
+        `).show();
+        
+        // Ocultar dropdown y botón de limpiar
+        doctorDropdown.removeClass('active');
+        doctorClear.hide();
+        
+        // Quitar clase error si existía
+        doctorSearch.removeClass('error');
+        
+        // Verificar disponibilidad al seleccionar doctor
+        verificarDisponibilidad();
+    };
+    
+    function limpiarSeleccionDoctor() {
+        doctorSearch.val('').focus();
+        doctorIdInput.val('');
+        doctorSelected.hide();
+        doctorClear.hide();
+    }
+    
+    function buscarDoctores(termino) {
+        
+        doctorDropdown.html('<div class="dropdown-loading"><i class="fas fa-spinner"></i> Buscando doctores...</div>');
+        doctorDropdown.addClass('active');
+        
+        $.ajax({
+            url: '/api/doctores/buscar/',
+            method: 'GET',
+            data: { q: termino },
+            success: function(data) {
+                
+                
+                // Tu API devuelve { doctores: [...] } según la función que mostraste
+                const doctores = data.doctores || [];
+                
+                if (doctores.length > 0) {
+                    mostrarResultadosDoctores(doctores);
+                } else {
+                    doctorDropdown.html('<div class="dropdown-item" style="justify-content: center; color: var(--gray-500);">No se encontraron doctores</div>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error en búsqueda de doctores:', error);
+                doctorDropdown.html('<div class="dropdown-item" style="justify-content: center; color: var(--danger);">Error al buscar. Intente de nuevo.</div>');
+            }
+        });
+    }
+    
+    function mostrarResultadosDoctores(doctores) {
+        let html = '';
+        doctores.forEach(d => {
+            const iniciales = d.nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            html += `
+                <div class="dropdown-item" data-id="${d.id}" data-nombre="${d.nombre}" data-especialidad="${d.especialidad}" data-telefono="${d.telefono}">
+                    <div class="item-avatar">${iniciales}</div>
+                    <div class="item-info">
+                        <div class="item-title">${d.nombre}</div>
+                        <div class="item-subtitle">
+                            <span><i class="fas fa-stethoscope"></i> ${d.especialidad}</span>
+                            <span><i class="fas fa-phone"></i> ${d.telefono}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        doctorDropdown.html(html);
+        
+        // Agregar evento click a cada resultado
+        $('.dropdown-item').on('click', function() {
+            const id = $(this).data('id');
+            const nombre = $(this).data('nombre');
+            const especialidad = $(this).data('especialidad');
+            const telefono = $(this).data('telefono');
+            window.seleccionarDoctor(id, nombre, especialidad, telefono);
+        });
+    }
+    
+    // Buscar doctores mientras escribe
+    doctorSearch.on('input', function() {
+        const termino = $(this).val().trim();
+        
+        // Mostrar/ocultar botón de limpiar
+        if (termino.length > 0) {
+            doctorClear.show();
+        } else {
+            doctorClear.hide();
+        }
+        
+        // Limpiar timeout anterior
+        clearTimeout(doctorTimeout);
+        
+        if (termino.length < 2) {
+            doctorDropdown.removeClass('active');
+            return;
+        }
+        
+        // Debounce para no sobrecargar el servidor
+        doctorTimeout = setTimeout(function() {
+            buscarDoctores(termino);
+        }, 300);
+    });
+    
+    doctorClear.on('click', function() {
+        limpiarSeleccionDoctor();
+    });
+    
+    // Cerrar dropdown al hacer clic fuera
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('#doctor-search, #doctor-dropdown').length) {
+            doctorDropdown.removeClass('active');
+        }
+    });
+
+    // ============================================
+    // EVENTOS PARA ELIMINAR SELECCIÓN
+    // ============================================
+    $(document).on('click', '#remove-paciente', function() {
+        limpiarSeleccionPaciente();
+    });
+    
+    $(document).on('click', '#remove-doctor', function() {
+        limpiarSeleccionDoctor();
+    });
+
+    // ============================================
+    // VALIDACIONES DE FECHA Y HORA
+    // ============================================
+    
+    // Función para validar día laboral
+    function esDiaLaboral(fecha) {
+        if (!fecha) return false;
+        const diaSemana = new Date(fecha).getDay();
+        return HORARIO_LABORAL.diasLaborales.includes(diaSemana);
+    }
+
+    // Función para validar horario laboral
+    function esHorarioLaboral(hora) {
+        if (!hora) return false;
+        const horaNum = parseInt(hora.split(':')[0]);
+        return horaNum >= HORARIO_LABORAL.inicio && horaNum < HORARIO_LABORAL.fin;
+    }
+
+    // Función para obtener mensaje de día no laboral
+    function getMensajeDiaNoLaboral(fecha) {
+        if (!fecha) return '';
+        const diasSemana = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+        const diaSemana = new Date(fecha).getDay();
+        const nombreDia = diasSemana[diaSemana];
+        
+        if (diaSemana === 0) {
+            return '❌ Los domingos no hay atención médica. Selecciona un día de lunes a viernes.';
+        } else if (diaSemana === 6) {
+            return '❌ Los sábados no hay atención médica. Selecciona un día de lunes a viernes.';
+        }
+        return '';
+    }
+
+    // Validar fecha al cambiar
+    fechaInput.on('change', function() {
+        const fecha = $(this).val();
+        
+        // Remover mensajes anteriores
+        $('.validation-message, .error-message').remove();
+        
+        if (fecha) {
+            // Validar día laboral
+            if (!esDiaLaboral(fecha)) {
+                const mensaje = getMensajeDiaNoLaboral(fecha);
+                $(this).after(`
+                    <div class="validation-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        ${mensaje}
+                    </div>
+                `);
+                $(this).addClass('error');
+                horaInput.val('').prop('disabled', true);
+            } else {
+                $(this).removeClass('error');
+                horaInput.prop('disabled', false);
+                
+                // Mostrar mensaje de éxito
+                $(this).after(`
+                    <div class="validation-message success">
+                        <i class="fas fa-check-circle"></i>
+                        ✅ Día válido (lunes a viernes)
+                    </div>
+                `);
+            }
+            
+            // Actualizar horas disponibles
+            actualizarHorasDisponibles();
+        }
+        
+        // Verificar disponibilidad si todos los campos están llenos
+        verificarDisponibilidad();
+    });
+
+    // Validar hora al cambiar
+    horaInput.on('change', function() {
+        const hora = $(this).val();
+        
+        // Remover mensajes anteriores específicos de hora
+        $('.hora-validation').remove();
+        
+        if (hora) {
+            if (!esHorarioLaboral(hora)) {
+                $(this).after(`
+                    <div class="validation-message hora-validation">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        ❌ El horario de atención es de 7:00 AM a 6:00 PM
+                    </div>
+                `);
+                $(this).addClass('error');
+            } else {
+                $(this).removeClass('error');
+                $(this).after(`
+                    <div class="validation-message success hora-validation">
+                        <i class="fas fa-check-circle"></i>
+                        ✅ Horario válido (7:00 AM - 6:00 PM)
+                    </div>
+                `);
+            }
+        }
+        
+        verificarDisponibilidad();
+    });
+
+    // Función para actualizar horas disponibles en el select
+    function actualizarHorasDisponibles() {
+        const fecha = fechaInput.val();
+        if (!fecha || !esDiaLaboral(fecha)) {
+            return;
+        }
+
+        // Generar opciones de hora cada hora desde 7 AM hasta 6 PM
+        const horas = [];
+        for (let h = HORARIO_LABORAL.inicio; h < HORARIO_LABORAL.fin; h++) {
+            const horaStr = h.toString().padStart(2, '0') + ':00';
+            horas.push(horaStr);
+        }
+
+        // Actualizar el select de horas
+        const horaActual = horaInput.val();
+        horaInput.empty();
+        horaInput.append('<option value="">Seleccione una hora...</option>');
+        
+        horas.forEach(hora => {
+            const selected = (hora === horaActual) ? 'selected' : '';
+            horaInput.append(`<option value="${hora}" ${selected}>${hora}</option>`);
+        });
+
+        // Agregar indicador de horario
+        if ($('.horario-indicator').length === 0) {
+            horaInput.after(`
+                <div class="disponibilidad-indicator horario-indicator">
+                    <i class="fas fa-clock"></i>
+                    Horario disponible: 7:00 AM - 6:00 PM (cada hora en punto)
+                </div>
+            `);
+        }
+    }
+
+    // Verificar disponibilidad con AJAX
+    function verificarDisponibilidad() {
+        const doctor = doctorIdInput.val();
+        const fecha = fechaInput.val();
+        const hora = horaInput.val();
+        
+        if(doctor && fecha && hora) {
+            // Validar que sea día laboral y horario laboral
+            if (!esDiaLaboral(fecha) || !esHorarioLaboral(hora)) {
+                return;
+            }
+            
+            // Mostrar loading
+            form.addClass('loading');
+            
+            $.ajax({
+                url: '/api/verificar-disponibilidad/',
+                method: 'GET',
+                data: {
+                    doctor: doctor,
+                    fecha: fecha,
+                    hora: hora
+                },
+                success: function(data) {
+                    form.removeClass('loading');
+                    
+                    // Remover mensajes anteriores de disponibilidad
+                    $('.disponibilidad-message').remove();
+                    
+                    if(!data.disponible) {
+                        // Doctor no disponible
+                        const mensaje = data.mensaje || 'El doctor no está disponible en ese horario';
+                        horaInput.after(`
+                            <div class="validation-message disponibilidad-message">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                ⚠️ ${mensaje}
+                            </div>
+                        `);
+                        horaInput.addClass('error');
+                    } else {
+                        // Doctor disponible
+                        horaInput.after(`
+                            <div class="validation-message success disponibilidad-message">
+                                <i class="fas fa-check-circle"></i>
+                                ✅ Doctor disponible
+                            </div>
+                        `);
+                        horaInput.removeClass('error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    form.removeClass('loading');
+                    console.error('Error al verificar disponibilidad:', error);
+                }
+            });
+        }
+    }
+
+    // Validar formulario antes de enviar
+    form.on('submit', function(e) {
+        const fecha = fechaInput.val();
+        const hora = horaInput.val();
+        const doctor = doctorIdInput.val();
+        const paciente = pacienteIdInput.val();
+        
+        let errores = [];
+        
+        if (!paciente) {
+            errores.push('Selecciona un paciente');
+            pacienteSearch.addClass('error');
+        }
+        
+        if (!doctor) {
+            errores.push('Selecciona un doctor');
+            doctorSearch.addClass('error');
+        }
+        
+        if (!fecha) {
+            errores.push('Selecciona una fecha');
+        } else if (!esDiaLaboral(fecha)) {
+            errores.push(getMensajeDiaNoLaboral(fecha));
+        }
+        
+        if (!hora) {
+            errores.push('Selecciona una hora');
+        } else if (!esHorarioLaboral(hora)) {
+            errores.push('La hora debe estar entre 7:00 AM y 6:00 PM');
+        }
+        
+        if (errores.length > 0) {
+            e.preventDefault();
+            alert('❌ No se puede agendar la cita:\n\n• ' + errores.join('\n• '));
+            return false;
+        }
+    });
+
+    // Inicializar horas disponibles
+    actualizarHorasDisponibles();
+
+    // Deshabilitar fines de semana en el datepicker
+    fechaInput.on('focus', function() {
+        $(this).attr('min', new Date().toISOString().split('T')[0]);
+    });
+
+    // Validación adicional al perder el foco
+    fechaInput.on('blur', function() {
+        const fecha = $(this).val();
+        if (fecha && !esDiaLaboral(fecha)) {
+            $(this).val('');
+            alert('❌ Solo se permiten citas de lunes a viernes');
+        }
+    });
+
+    // Si hay un paciente preseleccionado (para edición)
+    {% if form.paciente.value %}
+    console.log('Cargando paciente para edición:', {{ form.paciente.value }});
+    $.ajax({
+        url: '/api/pacientes/{{ form.paciente.value }}/',
+        method: 'GET',
+        success: function(data) {
+             
+            window.seleccionarPaciente(data.id, data.nombre, data.ci, data.telefono);
+        },
+        error: function(xhr, status, error) {
+            console.error('Error cargando datos del paciente:', error);
+        }
+    });
+    {% endif %}
+    
+    // Si hay un doctor preseleccionado (para edición)
+    {% if form.doctor.value %}
+    console.log('Cargando doctor para edición:', {{ form.doctor.value }});
+    $.ajax({
+        url: '/api/doctores/{{ form.doctor.value }}/',
+        method: 'GET',
+        success: function(data) {
+             
+            window.seleccionarDoctor(data.id, data.nombre, data.especialidad, data.telefono);
+        },
+        error: function(xhr, status, error) {
+            console.error('Error cargando datos del doctor:', error);
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endblock %}
+
+{% block contenido %}
+<div class="grid-x grid-padding-x align-center">
+    <div class="cell large-10 xlarge-8">
+        <!-- Card principal del formulario -->
+        <div class="form-card">
+            <div class="card-header">
+                <h3>
+                    <i class="fas fa-calendar-plus"></i>
+                    {{ titulo }}
+                </h3>
+            </div>
+            
+            <div class="card-body">
+                <form method="post" id="form-cita">
+                    {% csrf_token %}
+                    
+                    <div class="form-grid">
+                        <!-- Paciente - Buscador -->
+                        <div class="form-group full-width">
+                            <label class="form-label">
+                                <i class="fas fa-user"></i>
+                                Paciente
+                            </label>
+                            <div class="search-container">
+                                <input type="text" 
+                                       id="paciente-search" 
+                                       class="search-input" 
+                                       placeholder="Buscar paciente por nombre, cédula o teléfono..."
+                                       autocomplete="off">
+                                <i class="fas fa-search search-icon"></i>
+                                <i class="fas fa-times search-clear" id="paciente-clear"></i>
+                                
+                                <!-- Dropdown de resultados -->
+                                <div class="search-dropdown" id="paciente-dropdown"></div>
+                            </div>
+                            
+                            <!-- Elemento seleccionado -->
+                            <div class="selected-item" id="paciente-selected" style="display: none;"></div>
+                            
+                            <!-- Input oculto para el ID -->
+                            <input type="hidden" name="paciente" id="id_paciente" value="{{ form.paciente.value|default:'' }}">
+                            
+                            {% if form.paciente.errors %}
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ form.paciente.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Doctor - Buscador -->
+                        <div class="form-group full-width">
+                            <label class="form-label">
+                                <i class="fas fa-user-md"></i>
+                                Doctor
+                            </label>
+                            <div class="search-container">
+                                <input type="text" 
+                                       id="doctor-search" 
+                                       class="search-input" 
+                                       placeholder="Buscar doctor por nombre, especialidad o teléfono..."
+                                       autocomplete="off">
+                                <i class="fas fa-search search-icon"></i>
+                                <i class="fas fa-times search-clear" id="doctor-clear"></i>
+                                
+                                <!-- Dropdown de resultados -->
+                                <div class="search-dropdown" id="doctor-dropdown"></div>
+                            </div>
+                            
+                            <!-- Elemento seleccionado -->
+                            <div class="selected-item" id="doctor-selected" style="display: none;"></div>
+                            
+                            <!-- Input oculto para el ID -->
+                            <input type="hidden" name="doctor" id="id_doctor" value="{{ form.doctor.value|default:'' }}">
+                            
+                            {% if form.doctor.errors %}
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ form.doctor.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Fecha -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-calendar"></i>
+                                Fecha
+                            </label>
+                            {{ form.fecha }}
+                            {% if form.fecha.errors %}
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ form.fecha.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-hint" style="display: block; margin-top: 0.375rem; color: var(--gray-500); font-size: 0.75rem;">
+                                <i class="fas fa-info-circle"></i> Solo lunes a viernes
+                            </small>
+                        </div>
+                        
+                        <!-- Hora -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-clock"></i>
+                                Hora
+                            </label>
+                            {{ form.hora }}
+                            {% if form.hora.errors %}
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ form.hora.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="form-hint" style="display: block; margin-top: 0.375rem; color: var(--gray-500); font-size: 0.75rem;">
+                                <i class="fas fa-info-circle"></i> 7:00 AM - 6:00 PM
+                            </small>
+                        </div>
+                        
+                        <!-- Motivo -->
+                        <div class="form-group full-width">
+                            <label class="form-label">
+                                <i class="fas fa-stethoscope"></i>
+                                Motivo de la Consulta
+                            </label>
+                            {{ form.motivo }}
+                            {% if form.motivo.errors %}
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ form.motivo.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="card-footer">
+                <a href="{% url 'lista_citas' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+                <button type="submit" form="form-cita" class="btn btn-primary">
+                    <i class="fas fa-calendar-check"></i> Agendar Cita
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar de ayuda -->
+    <div class="cell large-4">
+        <div class="help-card">
+            <h5 class="help-title">
+                <i class="fas fa-info-circle"></i>
+                Información importante
+            </h5>
+            
+            <ul class="help-list">
+                <li class="help-item">
+                    <i class="fas fa-check"></i>
+                    Busca pacientes por nombre, cédula o teléfono
+                </li>
+                <li class="help-item">
+                    <i class="fas fa-check"></i>
+                    Busca doctores por nombre o especialidad
+                </li>
+                <li class="help-item">
+                    <i class="fas fa-check"></i>
+                    Verifica la disponibilidad del doctor
+                </li>
+                <li class="help-item">
+                    <i class="fas fa-check"></i>
+                    La fecha no puede ser en el pasado
+                </li>
+                <li class="help-item">
+                    <i class="fas fa-check"></i>
+                    Solo lunes a viernes
+                </li>
+                <li class="help-item">
+                    <i class="fas fa-check"></i>
+                    Horario: 7:00 AM - 6:00 PM
+                </li>
+                <li class="help-item">
+                    <i class="fas fa-check"></i>
+                    Citas cada hora en punto
+                </li>
+            </ul>
+            
+            <div class="horario-card">
+                <p><i class="fas fa-calendar"></i> <strong>Días laborales:</strong></p>
+                <p>✓ Lunes a Viernes</p>
+                <p><i class="fas fa-clock"></i> <strong>Horario:</strong></p>
+                <p>✓ 7:00 AM - 6:00 PM</p>
+                <p style="margin-top: 0.5rem; color: var(--warning-dark);">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Sábados y Domingos cerrado
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

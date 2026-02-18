@@ -1,0 +1,194 @@
+{% extends 'core/base.html' %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+
+{% block contenido %}
+<div class="grid-x grid-padding-x">
+    <div class="cell medium-10 large-8">
+        <div class="callout">
+            <h3><i class="fas fa-folder-medical"></i> {{ titulo }}</h3>
+            <p class="lead">Paciente: <strong>{{ paciente.nombre }}</strong></p>
+            <hr>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="grid-x grid-padding-x">
+                    <!-- Observaciones Generales -->
+                    <div class="cell medium-12">
+                        <label>Observaciones Generales
+                            {{ form.observaciones_generales }}
+                            {% if form.observaciones_generales.errors %}
+                                <small class="error">{{ form.observaciones_generales.errors.0 }}</small>
+                            {% endif %}
+                            <small class="help-text">Notas generales sobre el estado del paciente</small>
+                        </label>
+                    </div>
+                    
+                    <!-- Alergias (destacado en amarillo) -->
+                    <div class="cell medium-12">
+                        <label style="color: #856404;">
+                            <i class="fas fa-exclamation-triangle"></i> Alergias Conocidas
+                        </label>
+                        {{ form.alergias }}
+                        {% if form.alergias.errors %}
+                            <small class="error">{{ form.alergias.errors.0 }}</small>
+                        {% endif %}
+                        <small class="help-text">Separar con comas: Penicilina, Sulfas, etc.</small>
+                    </div>
+                    
+                    <!-- Medicamentos Actuales -->
+                    <div class="cell medium-12">
+                        <label style="color: #0c5460;">
+                            <i class="fas fa-pills"></i> Medicamentos Actuales
+                        </label>
+                        {{ form.medicamentos_actuales }}
+                        {% if form.medicamentos_actuales.errors %}
+                            <small class="error">{{ form.medicamentos_actuales.errors.0 }}</small>
+                        {% endif %}
+                        <small class="help-text">Incluir dosis y frecuencia si es posible</small>
+                    </div>
+                    
+                    <!-- Antecedentes Médicos -->
+                    <div class="cell medium-12">
+                        <label><i class="fas fa-history"></i> Antecedentes Médicos Importantes</label>
+                        {{ form.antecedentes }}
+                        {% if form.antecedentes.errors %}
+                            <small class="error">{{ form.antecedentes.errors.0 }}</small>
+                        {% endif %}
+                        <small class="help-text">Enfermedades crónicas, cirugías, hospitalizaciones, antecedentes familiares</small>
+                    </div>
+                    
+                    <!-- Campo Activo (SOLO para JEFE MÉDICO) -->
+                    {% if user.rol == 'JEFE' %}
+                    <div class="cell medium-12">
+                        <label class="switch">
+                            {{ form.activo }}
+                            <span class="switch-paddle"></span>
+                            <strong>Expediente Activo</strong>
+                        </label>
+                        <small class="help-text" style="color: #c0392b;">
+                            <i class="fas fa-info-circle"></i> Desactivar ocultará el expediente sin eliminarlo (soft delete)
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <hr>
+                
+                <!-- Metadata de Auditoría (solo lectura) -->
+                {% if expediente.pk %}
+                <div class="callout secondary" style="margin-bottom: 20px;">
+                    <small style="color: #666;">
+                        <i class="fas fa-calendar-plus"></i> Creado: {{ expediente.fecha_apertura|date:"d/m/Y H:i" }} por {{ expediente.creado_por.username }}
+                        {% if expediente.modificado_por %}
+                        | <i class="fas fa-edit"></i> Última modificación: {{ expediente.fecha_modificacion|date:"d/m/Y H:i" }} por {{ expediente.modificado_por.username }}
+                        {% endif %}
+                    </small>
+                </div>
+                {% endif %}
+                
+                <!-- Botones de Acción -->
+                <div class="grid-x grid-padding-x">
+                    <div class="cell">
+                        <a href="{% url 'ver_expediente' paciente.id %}" class="button secondary">
+                            <i class="fas fa-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="button primary float-right">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Panel de Ayuda -->
+    <div class="cell medium-2 large-4">
+        <div class="callout info">
+            <h6><i class="fas fa-info-circle"></i> Información</h6>
+            <ul class="no-bullet" style="font-size: 0.9em;">
+                <li><i class="fas fa-check"></i> Todos los campos son opcionales</li>
+                <li><i class="fas fa-check"></i> Usa listas separadas por comas</li>
+                <li><i class="fas fa-check"></i> Sé específico en antecedentes</li>
+                <li><i class="fas fa-check"></i> Los cambios quedan registrados</li>
+            </ul>
+        </div>
+        
+        <div class="callout warning" style="margin-top: 15px;">
+            <h6><i class="fas fa-shield-alt"></i> Confidencialidad</h6>
+            <p style="font-size: 0.85em;">
+                Esta información está protegida por leyes de privacidad médica. 
+                Su modificación queda registrada para auditoría.
+            </p>
+        </div>
+        
+        {% if user.rol == 'JEFE' %}
+        <div class="callout alert" style="margin-top: 15px;">
+            <h6><i class="fas fa-user-tie"></i> Solo Jefe Médico</h6>
+            <p style="font-size: 0.85em;">
+                Solo tú puedes activar/desactivar expedientes. 
+                Usa esta opción con precaución.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Estilos para el formulario -->
+<style>
+    /* Textareas con mejor apariencia */
+    textarea.input-group-field {
+        min-height: 80px;
+        resize: vertical;
+        font-family: inherit;
+    }
+    
+    /* Label de alergias destacado */
+    label[style*="color: #856404"] {
+        font-weight: 600;
+    }
+    
+    /* Switch de Foundation */
+    .switch {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 10px 0;
+    }
+    
+    .switch-paddle {
+        background: #ccc;
+    }
+    
+    .switch input:checked ~ .switch-paddle {
+        background: #27ae60;
+    }
+    
+    /* Help text */
+    .help-text {
+        display: block;
+        margin-top: 4px;
+        color: #666;
+        font-style: italic;
+    }
+    
+    /* Error messages */
+    .error {
+        color: #c0392b;
+        font-weight: 500;
+        display: block;
+        margin-top: 4px;
+    }
+</style>
+
+<!-- Script para inicializar Foundation Switch si es necesario -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof Foundation !== 'undefined') {
+        // Re-inicializar componentes si es necesario
+        Foundation.reInit('switch');
+    }
+});
+</script>
+{% endblock %}

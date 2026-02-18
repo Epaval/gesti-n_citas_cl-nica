@@ -1,0 +1,373 @@
+{% extends 'core/base.html' %}
+
+{% block titulo %}Receta Médica - {{ paciente.nombre }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .receta-container {
+        background: white;
+        border: 2px solid #1a5276;
+        border-radius: 8px;
+        padding: 25px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .receta-header {
+        text-align: center;
+        border-bottom: 2px solid #1a5276;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    .receta-header h3 { margin: 0; color: #1a5276; }
+    
+    .campo-receta { margin-bottom: 20px; }
+    .campo-receta label {
+        font-weight: 600;
+        color: #1a5276;
+        display: block;
+        margin-bottom: 8px;
+    }
+    .campo-receta textarea {
+        width: 100%;
+        min-height: 200px;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 1.1em;
+        line-height: 1.6;
+        resize: vertical;
+    }
+    
+    /* Botón de auto-completar */
+    .btn-auto {
+        background: #3498db;
+        border-color: #2980b9;
+        font-size: 0.9em;
+        padding: 8px 16px;
+        margin-top: 8px;
+    }
+    .btn-auto:hover { background: #2980b9; }
+    
+    .btn-imprimir {
+        background: #27ae60;
+        border-color: #219653;
+        font-size: 1.1em;
+        padding: 12px 30px;
+    }
+    .btn-imprimir:hover { background: #219653; }
+    
+    .help-text {
+        font-size: 0.85em;
+        color: #666;
+        margin-top: 5px;
+        font-style: italic;
+    }
+    
+    @media print {
+        body * { visibility: hidden; }
+        #area-receta-impresion, #area-receta-impresion * { visibility: visible; }
+        #area-receta-impresion { position: absolute; left: 0; top: 0; width: 100%; }
+        .no-print { display: none !important; }
+    }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<!-- Encabezado -->
+<div class="grid-x grid-padding-x align-justify align-center" style="margin-bottom: 20px;">
+    <div class="cell">
+        <h2><i class="fas fa-prescription"></i> Receta Médica Inteligente</h2>
+        <p class="lead">Paciente: <strong>{{ paciente.nombre }}</strong></p>
+    </div>
+    <div class="cell small-auto no-print">
+        <button type="button" class="button btn-imprimir" onclick="imprimirReceta()">
+            <i class="fas fa-print"></i> Imprimir Receta
+        </button>
+        <a href="{% url 'ver_expediente' paciente.id %}" class="button secondary">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+
+<!-- Formulario -->
+<form id="form-receta" method="post" action="{% url 'imprimir_receta' paciente.id %}" target="_blank">
+    {% csrf_token %}
+    
+    <div class="receta-container">
+        <!-- Doctor Solicitante -->
+        {% if user.rol == 'JEFE' %}
+        <div class="campo-receta no-print">
+            <label>Doctor:</label>
+            <select name="doctor_solicitante" class="input-group-field">
+                {% if doctores %}
+                {% for doctor in doctores %}
+                <option value="{{ doctor.id }}" {% if doctor_solicitante and doctor_solicitante.id == doctor.id %}selected{% endif %}>
+                    {{ doctor.nombre }}
+                </option>
+                {% endfor %}
+                {% else %}
+                <option value="">No hay doctores disponibles</option>
+                {% endif %}
+            </select>
+        </div>
+        {% else %}
+        <input type="hidden" name="doctor_solicitante" value="{{ doctor_solicitante.id|default:'' }}">
+        {% endif %}
+        
+        <!-- Datos del Paciente -->
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+            <p style="margin: 0;"><strong>Paciente:</strong> {{ paciente.nombre }}</p>
+            <p style="margin: 5px 0 0 0;"><strong>CI:</strong> {{ paciente.ci }} | <strong>Edad:</strong> {{ paciente.edad }} años</p>
+            <p style="margin: 5px 0 0 0;"><strong>Fecha:</strong> {% now "d/m/Y" %}</p>
+        </div>
+        
+        <!-- Receta / Medicamentos -->
+        <div class="campo-receta">
+            <label for="id_receta"><i class="fas fa-pills"></i> Receta / Medicamentos:</label>
+            <textarea id="id_receta" name="receta" class="input-group-field" 
+                      placeholder="Escribe los medicamentos, uno por línea:&#10;Amoxicilina 500mg&#10;Ibuprofeno 400mg&#10;Omeprazol 20mg" required></textarea>
+            <small class="help-text">💡 Tip: Escribe cada medicamento en una línea nueva</small>
+            <button type="button" class="button btn-auto no-print" onclick="autoCompletarIndicaciones()">
+                <i class="fas fa-magic"></i> Auto-completar Indicaciones
+            </button>
+        </div>
+        
+        <!-- Indicaciones -->
+        <div class="campo-receta">
+            <label for="id_indicaciones"><i class="fas fa-clipboard-list"></i> Indicaciones / Posología:</label>
+            <textarea id="id_indicaciones" name="indicaciones" class="input-group-field" 
+                      placeholder="Las indicaciones se auto-completarán con los medicamentos.&#10;Solo agrega cómo tomar cada uno:&#10;• Amoxicilina 500mg → 1 cápsula cada 8 horas por 7 días&#10;• Ibuprofeno 400mg → 1 tableta cada 6 horas si hay dolor"></textarea>
+            <small class="help-text">✨ Los nombres de medicamentos se copian automáticamente. Solo agrega la posología.</small>
+        </div>
+    </div>
+    
+    <!-- Área oculta para impresión -->
+    <div id="area-receta-impresion" style="display: none;"></div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/**
+ * Extrae los nombres de medicamentos del textarea de receta
+ * y los coloca en el textarea de indicaciones como base
+ */
+function autoCompletarIndicaciones() {
+    const recetaTextarea = document.getElementById('id_receta');
+    const indicacionesTextarea = document.getElementById('id_indicaciones');
+    
+    const recetaTexto = recetaTextarea.value.trim();
+    if (!recetaTexto) {
+        alert('⚠️ Primero escribe los medicamentos en el campo "Receta"');
+        recetaTextarea.focus();
+        return;
+    }
+    
+    // Extraer líneas no vacías (cada línea es un medicamento)
+    const lineas = recetaTexto.split('\n')
+        .map(l => l.trim())
+        .filter(l => l.length > 0 && !l.startsWith('•') && !l.startsWith('-'));
+    
+    if (lineas.length === 0) {
+        alert('⚠️ No se encontraron medicamentos válidos. Usa un medicamento por línea.');
+        return;
+    }
+    
+    // Confirmar antes de sobrescribir indicaciones existentes
+    if (indicacionesTextarea.value.trim()) {
+        if (!confirm('⚠️ Las indicaciones actuales se reemplazarán. ¿Continuar?')) {
+            return;
+        }
+    }
+    
+    // Generar texto base para indicaciones
+    const indicacionesBase = lineas.map(med => `• ${med} → `).join('\n');
+    
+    // Insertar en el textarea y poner el cursor al final del primer medicamento
+    indicacionesTextarea.value = indicacionesBase;
+    indicacionesTextarea.focus();
+    
+    // Mostrar mensaje de éxito
+    mostrarMensaje(`✅ ${lineas.length} medicamento(s) agregado(s) a indicaciones. Ahora completa la posología.`, 'success');
+}
+
+/**
+ * Muestra un mensaje temporal en pantalla
+ */
+function mostrarMensaje(texto, tipo = 'info') {
+    // Crear elemento de mensaje
+    const msg = document.createElement('div');
+    msg.textContent = texto;
+    msg.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        background: ${tipo === 'success' ? '#27ae60' : '#3498db'};
+        color: white;
+        border-radius: 8px;
+        font-weight: 500;
+        z-index: 9999;
+        animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+    `;
+    
+    // Agregar animaciones CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    `;
+    document.head.appendChild(style);
+    document.body.appendChild(msg);
+    
+    // Remover después de la animación
+    setTimeout(() => msg.remove(), 3000);
+}
+
+/**
+ * Función principal de impresión
+ */
+function imprimirReceta() {
+    const receta = document.getElementById('id_receta').value;
+    const indicaciones = document.getElementById('id_indicaciones').value;
+    
+    // Validar que haya receta
+    if (!receta.trim()) {
+        alert('⚠️ Por favor, escribe al menos un medicamento en la receta');
+        document.getElementById('id_receta').focus();
+        return;
+    }
+    
+    // Obtener nombre del doctor
+    let doctorNombre = '{{ doctor_solicitante.nombre|default:"" }}';
+    const selectDoctor = document.querySelector('select[name="doctor_solicitante"]');
+    if (selectDoctor && selectDoctor.value) {
+        doctorNombre = selectDoctor.options[selectDoctor.selectedIndex].text;
+    }
+    
+    // Datos del paciente
+    const paciente = '{{ paciente.nombre }}';
+    const ci = '{{ paciente.ci }}';
+    const edad = '{{ paciente.edad }}';
+    const fecha = new Date().toLocaleDateString('es-VE');
+    
+    // Formatear receta: cada línea como bullet point
+    const recetaFormat = receta.split('\n')
+        .filter(l => l.trim())
+        .map(l => `• ${l.trim()}`)
+        .join('<br>');
+    
+    // Formatear indicaciones: mantener formato con →
+    const indicacionesFormat = indicaciones 
+        ? indicaciones.split('\n')
+            .filter(l => l.trim())
+            .map(l => {
+                const linea = l.trim();
+                // Si ya tiene •, mantenerlo; si no, agregarlo
+                return linea.startsWith('•') ? linea : `• ${linea}`;
+            })
+            .join('<br>')
+        : '';
+    
+    // Generar HTML para impresión
+    const html = `
+        <div style="font-family: 'Courier New', monospace; max-width: 600px; margin: 0 auto; padding: 30px; border: 3px double #1a5276;">
+            <div style="text-align: center; border-bottom: 2px solid #1a5276; padding-bottom: 15px; margin-bottom: 20px;">
+                <h2 style="margin: 0; color: #1a5276;">RECETA MÉDICA</h2>
+                <p style="margin: 5px 0 0 0; color: #666;">Consultorio Médico</p>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <p><strong>Paciente:</strong> ${paciente}</p>
+                <p><strong>CI:</strong> ${ci} | <strong>Edad:</strong> ${edad} años</p>
+                <p><strong>Fecha:</strong> ${fecha}</p>
+                <p><strong>Doctor:</strong> ${doctorNombre}</p>
+            </div>
+            
+            <hr style="margin: 20px 0;">
+            
+            <h4 style="color: #1a5276; margin: 0 0 10px 0;">💊 Medicamentos:</h4>
+            <div style="line-height: 2; margin-bottom: 20px;">
+                ${recetaFormat}
+            </div>
+            
+            ${indicaciones ? `
+            <h4 style="color: #1a5276; margin: 0 0 10px 0;">📋 Posología:</h4>
+            <div style="line-height: 2;">
+                ${indicacionesFormat}
+            </div>
+            ` : ''}
+            
+            <div style="margin-top: 40px; text-align: right;">
+                <p style="margin: 0;">_______________________________</p>
+                <p style="margin: 5px 0 0 0;"><strong>${doctorNombre}</strong><br>
+                <small style="color: #666;">Firma y Sello del Médico</small></p>
+            </div>
+            
+            <div style="margin-top: 30px; font-size: 0.75em; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 10px;">
+                Documento de uso personal del paciente - No válido para reposos médicos<br>
+                Generado: ${new Date().toLocaleString('es-VE')}
+            </div>
+        </div>
+    `;
+    
+    // Abrir ventana de impresión
+    const ventana = window.open('', '_blank', 'width=650,height=800');
+    ventana.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Receta - ${paciente}</title>
+            <style>
+                body { font-family: 'Courier New', monospace; margin: 0; padding: 15px; }
+                @media print {
+                    body { margin: 0; padding: 10mm; }
+                    button { display: none; }
+                }
+            </style>
+        </head>
+        <body>${html}</body>
+        </html>
+    `);
+    ventana.document.close();
+    ventana.focus();
+    
+    // Auto-imprimir después de cargar
+    setTimeout(() => {
+        ventana.print();
+        // Opcional: cerrar ventana después de imprimir
+        // ventana.close();
+    }, 500);
+}
+
+/**
+ * Atajos de teclado para mejor experiencia
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    const recetaInput = document.getElementById('id_receta');
+    const indicacionesInput = document.getElementById('id_indicaciones');
+    
+    // Ctrl+Enter o Cmd+Enter para imprimir
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            imprimirReceta();
+        }
+    });
+    
+    // Tab desde receta enfoca indicaciones
+    recetaInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab' && !e.shiftKey) {
+            // Permitir comportamiento normal de tab en textarea
+            // Pero si está al final del texto, podría saltar a indicaciones
+        }
+    });
+    
+    // Mensaje de ayuda al cargar
+    if (!recetaInput.value && !indicacionesInput.value) {
+        mostrarMensaje('💡 Tip: Escribe los medicamentos y usa "Auto-completar" para ahorrar tiempo', 'info');
+    }
+});
+</script>
+{% endblock %}

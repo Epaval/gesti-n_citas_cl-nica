@@ -1,0 +1,459 @@
+{% extends 'core/base.html' %}
+
+{% block titulo %}Doctores{% endblock %}
+
+{% block contenido %}
+<!-- Encabezado --> 
+
+<div class="grid-x grid-padding-x align-justify align-center" style="margin-bottom: 20px;">
+    <div class="cell">
+        <h2><i class="fas fa-user-md"></i> Doctores</h2>
+        <p class="lead">Gestiona el equipo médico del consultorio</p>
+    </div>
+    <div class="cell small-auto">
+        <!-- ✅ SOLO JEFE MÉDICO O ADMIN VE EL BOTÓN -->
+        {% if user.rol == 'JEFE' or user.rol == 'ADMIN' %}
+        <a href="{% url 'crear_doctor' %}" class="button primary">
+            <i class="fas fa-plus"></i> Nuevo Doctor
+        </a>
+        {% else %}
+        <!-- Mensaje para otros roles -->
+        <button class="button disabled" title="Solo el Jefe Médico puede registrar doctores">
+            <i class="fas fa-lock"></i> Solo Jefe Médico
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Buscador y Filtros -->
+<div class="callout secondary">
+    <div class="grid-x grid-padding-x">
+        <div class="cell medium-8">
+            <div class="input-group">
+                <span class="input-group-label"><i class="fas fa-search"></i></span>
+                <input class="input-group-field" type="text" id="buscador_dinamico"
+                    placeholder="Buscar por nombre, especialidad o teléfono..." value="{{ buscar }}" autocomplete="off">
+                <span class="input-group-label" id="contador_resultados" style="display: none;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </span>
+            </div>
+        </div>
+        <div class="cell medium-4">
+            <select id="filtro_especialidad" class="input-group-field" style="height: 2.5rem;">
+                <option value="">Todas las especialidades</option>
+                {% for codigo, nombre in especialidades %}
+                <option value="{{ codigo }}" {% if especialidad == codigo %}selected{% endif %}>
+                    {{ nombre }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div id="resultado_info" style="margin-top: 10px; display: none;">
+        <small>
+            <i class="fas fa-info-circle"></i>
+            Mostrando <strong id="total_encontrados">0</strong> resultados
+            <a href="javascript:limpiarBusqueda()" class="float-right" id="btn_limpiar" style="display: none;">
+                <i class="fas fa-times"></i> Limpiar filtros
+            </a>
+        </small>
+    </div>
+</div>
+
+<!-- Tabla de Doctores -->
+<div class="callout">
+    <div class="grid-x grid-padding-x align-justify" style="margin-bottom: 15px;">
+        <div class="cell small-auto">
+            <span class="badge primary">
+                <i class="fas fa-list"></i> <span id="rango_mostrado">1 - 6</span>
+                de <span id="total_doctores">{{ total_doctores }}</span>
+            </span>
+        </div>
+        <div class="cell small-auto">
+            <small><i class="fas fa-database"></i> Total: <span id="total_display">{{ total_doctores }}</span>
+                doctores</small>
+        </div>
+    </div>
+
+    <!-- Contenedor de tabla con scroll horizontal -->
+    <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+        <table style="width: 100%; min-width: 1000px; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f9fa;">
+                    <th
+                        style="width: 70px; padding: 12px 8px; text-align: center; font-weight: 600; color: #1a5276; border-bottom: 2px solid #dee2e6;">
+                        ID</th>
+                    <th style="padding: 12px 8px; font-weight: 600; color: #1a5276; border-bottom: 2px solid #dee2e6;">
+                        Doctor</th>
+                    <th
+                        style="width: 150px; padding: 12px 8px; font-weight: 600; color: #1a5276; border-bottom: 2px solid #dee2e6;">
+                        Especialidad</th>
+                    <th
+                        style="width: 130px; padding: 12px 8px; font-weight: 600; color: #1a5276; border-bottom: 2px solid #dee2e6;">
+                        Teléfono</th>
+                    <th
+                        style="width: 100px; padding: 12px 8px; text-align: center; font-weight: 600; color: #1a5276; border-bottom: 2px solid #dee2e6;">
+                        Costo</th>
+                    <th
+                        style="width: 100px; padding: 12px 8px; text-align: center; font-weight: 600; color: #1a5276; border-bottom: 2px solid #dee2e6;">
+                        Citas</th>
+                    <th
+                        style="width: 120px; padding: 12px 8px; text-align: center; font-weight: 600; color: #1a5276; border-bottom: 2px solid #dee2e6;">
+                        Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tabla_doctores">
+                {% for doctor in doctores %}
+                <tr data-doctor-id="{{ doctor.id }}" style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px 8px; text-align: center; vertical-align: middle;">
+                        <strong>#{{ doctor.id }}</strong>
+                    </td>
+                    <td style="padding: 12px 8px; vertical-align: middle;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div
+                                style="width: 40px; height: 40px; background: #2c3e50; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
+                                {{ doctor.nombre|slice:":1"|upper }}
+                            </div>
+                            <div style="min-width: 0;">
+                                <strong
+                                    style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                                    title="{{ doctor.nombre }}">
+                                    {{ doctor.nombre }}
+                                </strong>
+                                <small style="color: #666;">
+                                    {% if doctor.usuario %}
+                                    <i class="fas fa-check-circle" style="color: #27ae60;"></i> Usuario activo
+                                    {% else %}
+                                    <i class="fas fa-exclamation-circle" style="color: #f39c12;"></i> Sin usuario
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding: 12px 8px; vertical-align: middle;">
+                        <span class="badge" style="background: #3498db; color: white;">
+                            {{ doctor.get_especialidad_display }}
+                        </span>
+                    </td>
+                    <td style="padding: 12px 8px; vertical-align: middle;">
+                        <a href="tel:{{ doctor.telefono }}"
+                            style="color: #1a5276; text-decoration: none; white-space: nowrap;">
+                            <i class="fas fa-phone"></i> {{ doctor.telefono }}
+                        </a>
+                    </td>
+                    <td style="padding: 12px 8px; text-align: center; vertical-align: middle;">
+                        <strong style="color: #27ae60;">${{ doctor.costo_consulta|floatformat:0 }}</strong>
+                    </td>
+                    <td style="padding: 12px 8px; text-align: center; vertical-align: middle;">
+                        <!-- ✅ CORREGIDO: Usar count simple o variable anotada -->
+                        <span class="badge secondary" title="Total de citas">
+                            {{ doctor.citas.count|default:0 }}
+                        </span>
+                    </td>
+                    <td style="padding: 12px 8px; text-align: center; vertical-align: middle;">
+                        <div style="display: inline-flex; gap: 4px; justify-content: center;">
+                            <a href="{% url 'detalle_doctor' doctor.id %}" class="button small primary"
+                                title="Ver perfil" style="margin: 0; padding: 0.4rem 0.6rem;">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if user.rol == 'ADMIN' %}
+                            <a href="{% url 'editar_doctor' doctor.id %}" class="button small secondary" title="Editar"
+                                style="margin: 0; padding: 0.4rem 0.6rem;">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="padding: 50px; text-align: center;">
+                        <i class="fas fa-user-md fa-3x" style="color: #ccc;"></i>
+                        <h4 style="color: #666; margin: 15px 0 10px 0;">No hay doctores registrados</h4>
+                        <p style="color: #999; margin-bottom: 15px;">Comienza registrando tu primer doctor</p>
+                        {% if user.rol == 'ADMIN' %}
+                        <a href="{% url 'crear_doctor' %}" class="button primary">
+                            <i class="fas fa-plus"></i> Registrar Doctor
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+
+    <!-- Mensaje de Cargando -->
+    <div id="loading"
+        style="display: none; text-align: center; padding: 30px; background: #f8f9fa; border-radius: 8px; margin: 20px 0;">
+        <i class="fas fa-spinner fa-spin fa-2x" style="color: #1a5276;"></i>
+        <p style="margin: 15px 0 0 0; color: #666;">Buscando doctores...</p>
+    </div>
+
+    <!-- Mensaje de Sin Resultados -->
+    <div id="sin_resultados"
+        style="display: none; text-align: center; padding: 30px; background: #f8f9fa; border-radius: 8px; margin: 20px 0;">
+        <i class="fas fa-search fa-2x" style="color: #ccc;"></i>
+        <h4 style="color: #666; margin: 15px 0 10px 0;">No se encontraron resultados</h4>
+        <p style="color: #999; margin-bottom: 15px;">Intenta con otro término de búsqueda</p>
+        <button class="button secondary" onclick="limpiarBusqueda()">
+            <i class="fas fa-redo"></i> Mostrar Todos
+        </button>
+    </div>
+
+    <!-- Paginador -->
+    <div id="paginador_container">
+        {% if page_obj.has_other_pages %}
+        <div class="grid-x grid-padding-x align-center" style="margin-top: 20px;">
+            <div class="cell auto">
+                <nav aria-label="Paginación de doctores">
+                    <ul class="pagination" role="menubar">
+                        {% if page_obj.has_previous %}
+                        <li class="pagination-previous">
+                            <a
+                                href="?page=1{% if buscar %}&buscar={{ buscar }}{% endif %}{% if especialidad %}&especialidad={{ especialidad }}{% endif %}">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="pagination-previous">
+                            <a
+                                href="?page={{ page_obj.previous_page_number }}{% if buscar %}&buscar={{ buscar }}{% endif %}{% if especialidad %}&especialidad={{ especialidad }}{% endif %}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="pagination-previous disabled"></li>
+                        <li class="pagination-previous disabled"></li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="current"><span>{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <li><a
+                                href="?page={{ num }}{% if buscar %}&buscar={{ buscar }}{% endif %}{% if especialidad %}&especialidad={{ especialidad }}{% endif %}">{{
+                                num }}</a></li>
+                            {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                            <li class="pagination-next">
+                                <a
+                                    href="?page={{ page_obj.next_page_number }}{% if buscar %}&buscar={{ buscar }}{% endif %}{% if especialidad %}&especialidad={{ especialidad }}{% endif %}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="pagination-next">
+                                <a
+                                    href="?page={{ page_obj.paginator.num_pages }}{% if buscar %}&buscar={{ buscar }}{% endif %}{% if especialidad %}&especialidad={{ especialidad }}{% endif %}">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="pagination-next disabled"></li>
+                            <li class="pagination-next disabled"></li>
+                            {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Estilos Personalizados -->
+<style>
+    @keyframes highlight {
+        0% {
+            background-color: #fff3cd;
+        }
+
+        100% {
+            background-color: #fff;
+        }
+    }
+
+    tr.resaltado {
+        animation: highlight 1s ease;
+    }
+
+    #tabla_doctores tr:hover {
+        background-color: #f8f9fa;
+        transition: background-color 0.2s ease;
+    }
+
+    #buscador_dinamico {
+        transition: border-color 0.3s ease;
+    }
+
+    #buscador_dinamico:focus {
+        border-color: #1a5276;
+        box-shadow: 0 0 5px rgba(26, 82, 118, 0.3);
+    }
+
+    @media screen and (max-width: 768px) {
+        table {
+            font-size: 0.85em;
+        }
+
+        table th,
+        table td {
+            padding: 8px 4px !important;
+        }
+
+        .button.small {
+            padding: 0.3rem 0.5rem !important;
+            font-size: 0.9em;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let timeoutId = null;
+
+    function buscarDoctores() {
+        const query = document.getElementById('buscador_dinamico').value.trim();
+        const especialidad = document.getElementById('filtro_especialidad').value;
+        const loading = document.getElementById('loading');
+        const tabla = document.getElementById('tabla_doctores');
+        const sinResultados = document.getElementById('sin_resultados');
+        const paginador = document.getElementById('paginador_container');
+        const resultadoInfo = document.getElementById('resultado_info');
+        const totalEncontrados = document.getElementById('total_encontrados');
+        const btnLimpiar = document.getElementById('btn_limpiar');
+        const contadorIcono = document.getElementById('contador_resultados');
+
+        loading.style.display = 'block';
+        tabla.parentElement.style.display = 'none';
+        sinResultados.style.display = 'none';
+        paginador.style.display = 'none';
+        contadorIcono.style.display = 'inline';
+
+        if (timeoutId) clearTimeout(timeoutId);
+
+        timeoutId = setTimeout(() => {
+            let url = `/api/doctores/buscar/?q=${encodeURIComponent(query)}`;
+            if (especialidad) url += `&especialidad=${encodeURIComponent(especialidad)}`;
+
+            fetch(url)
+                .then(response => {
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error('Respuesta no válida');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    loading.style.display = 'none';
+                    contadorIcono.style.display = 'none';
+
+                    if (data.success && data.doctores.length > 0) {
+                        tabla.parentElement.style.display = 'block';
+                        tabla.style.display = 'table';
+                        sinResultados.style.display = 'none';
+                        paginador.style.display = 'none';
+                        resultadoInfo.style.display = 'block';
+                        totalEncontrados.textContent = data.total;
+                        btnLimpiar.style.display = (query || especialidad) ? 'inline' : 'none';
+                        actualizarTabla(data.doctores);
+                        document.getElementById('rango_mostrado').textContent = `1 - ${data.doctores.length}`;
+                        document.getElementById('total_display').textContent = data.total;
+                    } else if (query || especialidad) {
+                        tabla.parentElement.style.display = 'none';
+                        sinResultados.style.display = 'block';
+                        resultadoInfo.style.display = 'block';
+                        totalEncontrados.textContent = '0';
+                        btnLimpiar.style.display = 'inline';
+                    } else {
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loading.style.display = 'none';
+                    contadorIcono.style.display = 'none';
+                    alert('⚠️ Error al buscar: ' + error.message);
+                });
+        }, 500);
+    }
+
+    function actualizarTabla(doctores) {
+        const userRol = '{{ user.rol }}';
+        const puedeEditar = userRol === 'ADMIN';
+        let html = '';
+
+        doctores.forEach((doctor, index) => {
+            html += `
+            <tr data-doctor-id="${doctor.id}" class="resaltado" style="animation-delay: ${index * 0.05}s; border-bottom: 1px solid #eee;">
+                <td style="padding: 12px 8px; text-align: center; vertical-align: middle;"><strong>#${doctor.id}</strong></td>
+                <td style="padding: 12px 8px; vertical-align: middle;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 40px; height: 40px; background: #2c3e50; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
+                            ${doctor.inicial}
+                        </div>
+                        <div style="min-width: 0;">
+                            <strong style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${doctor.nombre}">${doctor.nombre}</strong>
+                        </div>
+                    </div>
+                </td>
+                <td style="padding: 12px 8px; vertical-align: middle;">
+                    <span class="badge" style="background: #3498db; color: white;">${doctor.especialidad}</span>
+                </td>
+                <td style="padding: 12px 8px; vertical-align: middle;">
+                    <a href="tel:${doctor.telefono}" style="color: #1a5276; text-decoration: none; white-space: nowrap;">
+                        <i class="fas fa-phone"></i> ${doctor.telefono}
+                    </a>
+                </td>
+                <td style="padding: 12px 8px; text-align: center; vertical-align: middle;">
+                    <strong style="color: #27ae60;">$${doctor.costo_consulta}</strong>
+                </td>
+                <td style="padding: 12px 8px; text-align: center; vertical-align: middle;">
+                    <span class="badge secondary">0</span>
+                </td>
+                <td style="padding: 12px 8px; text-align: center; vertical-align: middle;">
+                    <div style="display: inline-flex; gap: 4px; justify-content: center;">
+                        <a href="${doctor.url_detalle}" class="button small primary" title="Ver perfil" style="margin: 0; padding: 0.4rem 0.6rem;">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        ${puedeEditar ? `<a href="${doctor.url_editar}" class="button small secondary" title="Editar" style="margin: 0; padding: 0.4rem 0.6rem;"><i class="fas fa-edit"></i></a>` : ''}
+                    </div>
+                </td>
+            </tr>
+        `;
+        });
+
+        document.getElementById('tabla_doctores').innerHTML = html;
+    }
+
+    function limpiarBusqueda() {
+        document.getElementById('buscador_dinamico').value = '';
+        document.getElementById('filtro_especialidad').value = '';
+        location.reload();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const input = document.getElementById('buscador_dinamico');
+        const filtro = document.getElementById('filtro_especialidad');
+
+        input.addEventListener('input', buscarDoctores);
+        filtro.addEventListener('change', buscarDoctores);
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') { limpiarBusqueda(); input.blur(); }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey && e.key === 'k') || e.key === '/') {
+                e.preventDefault(); input.focus(); input.select();
+            }
+        });
+
+        if (input.value.trim() || filtro.value) {
+            document.getElementById('btn_limpiar').style.display = 'inline';
+            document.getElementById('resultado_info').style.display = 'block';
+        }
+    });
+</script>
+{% endblock %}

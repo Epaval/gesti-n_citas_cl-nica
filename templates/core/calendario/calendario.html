@@ -1,0 +1,1015 @@
+{% extends 'core/base.html' %}
+
+{% block titulo %}Calendario de Citas{% endblock %}
+
+{% block extra_css %}
+<!-- FullCalendar CSS -->
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
+<style>
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #3b82f6;
+    --primary-soft: #dbeafe;
+    --success: #10b981;
+    --success-dark: #059669;
+    --success-soft: #d1fae5;
+    --warning: #f59e0b;
+    --warning-dark: #d97706;
+    --warning-soft: #fef3c7;
+    --danger: #ef4444;
+    --danger-dark: #dc2626;
+    --danger-soft: #fee2e2;
+    --info: #6366f1;
+    --info-soft: #e0e7ff;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --radius-sm: 0.375rem;
+    --radius: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+}
+
+/* Layout General */
+body {
+    background: var(--gray-50);
+}
+
+/* Header */
+.page-header {
+    background: linear-gradient(135deg, var(--gray-800), var(--gray-900));
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header-title h2 {
+    color: white;
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.header-title h2 i {
+    color: var(--primary);
+    font-size: 2rem;
+}
+
+.header-title p {
+    color: var(--gray-300);
+    margin: 0;
+    font-size: 1rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* Botones Modernos */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    line-height: 1;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-outline-light {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Leyenda Moderna */
+.legend-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.legend-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gray-700);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.legend-title i {
+    color: var(--primary);
+}
+
+.legend-items {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--gray-600);
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Filtros Modernos */
+.filters-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--gray-200);
+}
+
+.filters-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gray-700);
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.filters-title i {
+    color: var(--primary);
+}
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.filter-label i {
+    color: var(--primary);
+    font-size: 0.75rem;
+}
+
+.filter-select {
+    width: 100%;
+    padding: 0.625rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    color: var(--gray-700);
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.filter-actions {
+    display: flex;
+    align-items: flex-end;
+}
+
+/* Calendario Card */
+.calendar-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--gray-200);
+}
+
+/* Personalización de FullCalendar */
+#calendar {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: white;
+    border-radius: var(--radius);
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Toolbar del calendario */
+.fc-toolbar-title {
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    color: var(--gray-800) !important;
+}
+
+.fc-button-primary {
+    background: var(--primary) !important;
+    border-color: var(--primary-dark) !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 0.2s ease !important;
+}
+
+.fc-button-primary:hover {
+    background: var(--primary-dark) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: var(--shadow) !important;
+}
+
+.fc-button-primary:focus {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3) !important;
+}
+
+.fc-button-secondary {
+    background: white !important;
+    border-color: var(--gray-300) !important;
+    color: var(--gray-700) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.fc-button-secondary:hover {
+    background: var(--gray-50) !important;
+    border-color: var(--gray-400) !important;
+}
+
+/* Eventos del calendario */
+.fc-event {
+    cursor: pointer !important;
+    font-size: 0.8em !important;
+    padding: 2px 4px !important;
+    border-radius: var(--radius-sm) !important;
+    border: none !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 0.2s ease !important;
+}
+
+.fc-event:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: var(--shadow) !important;
+}
+
+/* Colores de estados - con gradientes sutiles */
+.fc-event[data-estado="PROGRAMADA"] {
+    background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+    border: none !important;
+}
+
+.fc-event[data-estado="EN_ESPERA"] {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    border: none !important;
+}
+
+.fc-event[data-estado="COMPLETADA"] {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    border: none !important;
+}
+
+.fc-event[data-estado="CANCELADA"] {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    border: none !important;
+}
+
+/* Días del calendario */
+.fc-day-today {
+    background: var(--primary-soft) !important;
+}
+
+.fc-daygrid-day-number {
+    color: var(--gray-700) !important;
+    font-weight: 500 !important;
+}
+
+.fc-col-header-cell {
+    background: var(--gray-50) !important;
+    padding: 0.75rem 0 !important;
+}
+
+.fc-col-header-cell-cushion {
+    color: var(--gray-600) !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.025em !important;
+}
+
+/* Modal Moderno */
+.modern-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modern-modal.active {
+    display: flex;
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-container {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: 2rem;
+    max-width: 550px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.modal-header h4 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-header h4 i {
+    color: var(--primary);
+}
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gray-100);
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.25rem;
+    border: none;
+}
+
+.modal-close:hover {
+    background: var(--gray-200);
+    color: var(--gray-800);
+    transform: rotate(90deg);
+}
+
+/* Detalles de cita en modal */
+.cita-details {
+    margin-bottom: 1.5rem;
+}
+
+.detail-row {
+    display: flex;
+    padding: 0.75rem 0;
+    border-bottom: 1px dashed var(--gray-200);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    width: 120px;
+    font-weight: 600;
+    color: var(--gray-600);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.detail-label i {
+    color: var(--primary);
+    font-size: 0.9rem;
+    width: 20px;
+}
+
+.detail-value {
+    flex: 1;
+    color: var(--gray-800);
+}
+
+.detail-value a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.detail-value a:hover {
+    text-decoration: underline;
+}
+
+/* Badges en modal */
+.modal-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.modal-badge.PROGRAMADA {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+}
+
+.modal-badge.EN_ESPERA {
+    background: var(--warning-soft);
+    color: var(--warning-dark);
+}
+
+.modal-badge.COMPLETADA {
+    background: var(--success-soft);
+    color: var(--success-dark);
+}
+
+.modal-badge.CANCELADA {
+    background: var(--danger-soft);
+    color: var(--danger-dark);
+}
+
+.modal-footer {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--gray-200);
+}
+
+/* Tooltip personalizado */
+.fc-event-tooltip {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--gray-200);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .filters-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1.25rem;
+    }
+    
+    .header-title h2 {
+        font-size: 1.5rem;
+    }
+    
+    .header-actions {
+        width: 100%;
+    }
+    
+    .header-actions .btn {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .legend-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .legend-items {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .filters-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .filter-actions .btn {
+        width: 100%;
+    }
+    
+    .fc-toolbar {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .fc-toolbar-title {
+        font-size: 1rem !important;
+    }
+    
+    .modal-container {
+        padding: 1.5rem;
+    }
+    
+    .detail-row {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .detail-label {
+        width: 100%;
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+    }
+    
+    .modal-footer .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .legend-items {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .legend-item {
+        width: 100%;
+    }
+    
+    .calendar-card {
+        padding: 1rem;
+    }
+    
+    .modal-container {
+        padding: 1rem;
+    }
+}
+
+/* Estados de carga */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--gray-200);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Animaciones */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.calendar-card {
+    animation: slideIn 0.3s ease;
+}
+</style>
+{% endblock %}
+
+{% block contenido %}
+<!-- Header Modernizado -->
+<div class="page-header">
+    <div class="header-title">
+        <h2>
+            <i class="fas fa-calendar-alt"></i>
+            Calendario de Citas
+        </h2>
+        <p>Visualiza y gestiona las citas médicas del consultorio</p>
+    </div>
+    <div class="header-actions">
+        {% if user.rol == 'ADMIN' or user.rol == 'JEFE' or user.rol == 'ASISTENTE' %}
+        <a href="{% url 'crear_cita' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nueva Cita
+        </a>
+        <button class="btn btn-outline-light" onclick="calendar.today()">
+            <i class="fas fa-calendar-day"></i> Hoy
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Leyenda de Estados Modernizada -->
+<div class="legend-card">
+    <div class="legend-title">
+        <i class="fas fa-info-circle"></i>
+        <span>Estados de citas:</span>
+    </div>
+    <div class="legend-items">
+        <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(135deg, #3b82f6, #2563eb);"></div>
+            <span>Programada</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(135deg, #f59e0b, #d97706);"></div>
+            <span>En Espera</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(135deg, #10b981, #059669);"></div>
+            <span>Completada</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(135deg, #ef4444, #dc2626);"></div>
+            <span>Cancelada</span>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros Modernizados -->
+
+<div class="filters-card">
+    <div class="filters-title">
+        <i class="fas fa-filter"></i>
+        <span>Filtros de búsqueda</span>
+    </div>
+    
+    <form id="form-filtros">
+        <div class="filters-grid">
+            <!-- Selector de Doctor -->
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-user-md"></i>
+                    Doctor
+                </label>
+                <div class="filter-select-wrapper">
+                    <select name="doctor_id" id="filtro-doctor" class="filter-select">
+                        <option value="">Todos los doctores</option>
+                        {% for doctor in doctores %}
+                        <option value="{{ doctor.id }}" {% if doctor_seleccionado and doctor_seleccionado.id == doctor.id %}selected{% endif %}>
+                            {{ doctor.nombre }} - {{ doctor.get_especialidad_display }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <i class="fas fa-chevron-down select-arrow"></i>
+                </div>
+            </div>
+            
+            <!-- Selector de Estado -->
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-tag"></i>
+                    Estado
+                </label>
+                <div class="filter-select-wrapper">
+                    <select name="estado" id="filtro-estado" class="filter-select">
+                        <option value="todas">Todos los estados</option>
+                        {% for valor, nombre in estados_cita %}
+                        <option value="{{ valor }}">{{ nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    <i class="fas fa-chevron-down select-arrow"></i>
+                </div>
+            </div>
+            
+           
+        
+        <!-- Filtros activos (opcional, mejora UX) -->
+        <div class="active-filters" id="active-filters" style="display: none;">
+            <span class="active-filters-label">Filtros activos:</span>
+            <div class="filter-tags" id="filter-tags"></div>
+            <button type="button" class="btn-clear-filters" id="btn-clear-filters">
+                <i class="fas fa-times"></i> Limpiar todo
+            </button>
+        </div>
+    </form>
+</div>
+
+
+<!-- Calendario Card -->
+<div class="calendar-card">
+    <div id="calendar"></div>
+</div>
+
+<!-- Modal de Detalle Modernizado -->
+<div class="modern-modal" id="modal-cita">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h4>
+                <i class="fas fa-calendar-check"></i>
+                Detalle de Cita
+            </h4>
+            <button class="modal-close" id="modal-close">&times;</button>
+        </div>
+        
+        <div class="cita-details" id="cita-detalles">
+            <!-- Se llena dinámicamente con JS -->
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="modal-cancel">
+                <i class="fas fa-times"></i> Cerrar
+            </button>
+            <a href="#" id="btn-ver-cita" class="btn btn-primary" target="_blank">
+                <i class="fas fa-eye"></i> Ver Cita Completa
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- FullCalendar JS -->
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    const modal = document.getElementById('modal-cita');
+    const modalClose = document.getElementById('modal-close');
+    const modalCancel = document.getElementById('modal-cancel');
+    const citaDetalles = document.getElementById('cita-detalles');
+    const btnVerCita = document.getElementById('btn-ver-cita');
+    
+    // Permisos de usuario
+    const permisosUsuario = {
+        puedeCrearCitas: {% if user.rol == 'ADMIN' or user.rol == 'JEFE' or user.rol == 'ASISTENTE' %}true{% else %}false{% endif %},
+        puedeVerTodos: {% if user.rol == 'ADMIN' or user.rol == 'JEFE' %}true{% else %}false{% endif %},
+        rol: '{{ user.rol }}',
+    };
+    
+    // Inicializar calendario
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+        },
+        locale: 'es',
+        buttonText: {
+            today: 'Hoy',
+            month: 'Mes',
+            week: 'Semana',
+            day: 'Día',
+            list: 'Lista'
+        },
+        events: function(fetchInfo, successCallback, failureCallback) {
+            const params = new URLSearchParams({
+                start: fetchInfo.startStr.split('T')[0],
+                end: fetchInfo.endStr.split('T')[0],
+                doctor_id: document.getElementById('filtro-doctor').value,
+                estado: document.getElementById('filtro-estado').value
+            });
+            
+            fetch(`/api/calendario/citas/?${params}`)
+                .then(response => response.json())
+                .then(data => successCallback(data.events))
+                .catch(error => {
+                    console.error('Error cargando citas:', error);
+                    failureCallback(error);
+                });
+        },
+        eventClick: function(info) {
+            const props = info.event.extendedProps;
+            
+            // Formatear fecha
+            const fecha = info.event.start.toLocaleDateString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            const hora = info.event.start.toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            citaDetalles.innerHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="fas fa-user"></i> Paciente
+                    </span>
+                    <span class="detail-value"><strong>${props.paciente.nombre}</strong></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="fas fa-phone"></i> Teléfono
+                    </span>
+                    <span class="detail-value"><a href="tel:${props.paciente.telefono}">${props.paciente.telefono}</a></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="fas fa-envelope"></i> Email
+                    </span>
+                    <span class="detail-value"><a href="mailto:${props.paciente.email}">${props.paciente.email}</a></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="fas fa-user-md"></i> Doctor
+                    </span>
+                    <span class="detail-value">
+                        <strong>${props.doctor.nombre}</strong><br>
+                        <small style="color: var(--gray-500);">${props.doctor.especialidad}</small>
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="fas fa-calendar"></i> Fecha
+                    </span>
+                    <span class="detail-value">${fecha}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="fas fa-clock"></i> Hora
+                    </span>
+                    <span class="detail-value">${hora}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="fas fa-stethoscope"></i> Motivo
+                    </span>
+                    <span class="detail-value">${props.motivo}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="fas fa-tag"></i> Estado
+                    </span>
+                    <span class="detail-value">
+                        <span class="modal-badge ${props.estado_code}">${props.estado}</span>
+                    </span>
+                </div>
+                ${props.diagnostico ? `
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="fas fa-file-medical"></i> Diagnóstico
+                    </span>
+                    <span class="detail-value">${props.diagnostico}</span>
+                </div>` : ''}
+            `;
+            
+            btnVerCita.href = props.url_detalle;
+            modal.classList.add('active');
+        },
+        dateClick: function(info) {
+            if (permisosUsuario.puedeCrearCitas) {
+                if (confirm(`¿Deseas agendar una nueva cita para el ${info.dateStr}?`)) {
+                    window.location.href = `{% url 'crear_cita' %}?fecha=${info.dateStr}`;
+                }
+            }
+        },
+        editable: false,
+        selectable: permisosUsuario.puedeCrearCitas,
+        loading: function(isLoading) {
+            if (isLoading) {
+                // Mostrar indicador de carga
+                calendarEl.style.opacity = '0.6';
+            } else {
+                calendarEl.style.opacity = '1';
+            }
+        }
+    });
+    
+    calendar.render();
+    
+    // Filtros del calendario
+    document.getElementById('form-filtros').addEventListener('submit', function(e) {
+        e.preventDefault();
+        calendar.refetchEvents();
+    });
+    
+    document.getElementById('filtro-doctor').addEventListener('change', function() {
+        calendar.refetchEvents();
+    });
+    
+    document.getElementById('filtro-estado').addEventListener('change', function() {
+        calendar.refetchEvents();
+    });
+    
+    // Funciones del modal
+    function cerrarModal() {
+        modal.classList.remove('active');
+    }
+    
+    modalClose.addEventListener('click', cerrarModal);
+    modalCancel.addEventListener('click', cerrarModal);
+    
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) cerrarModal();
+    });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            cerrarModal();
+        }
+    });
+    
+    // Atajo de teclado: 'c' para crear cita
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'c' && !e.ctrlKey && !e.altKey && permisosUsuario.puedeCrearCitas) {
+            if (document.activeElement.tagName !== 'INPUT' && 
+                document.activeElement.tagName !== 'SELECT' && 
+                document.activeElement.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                window.location.href = '{% url "crear_cita" %}';
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,933 @@
+{% extends 'core/base.html' %}
+
+{% block titulo %}Pacientes{% endblock %}
+
+{% block contenido %}
+<!-- Encabezado Mejorado -->
+<div class="grid-container fluid">
+    <div class="grid-x grid-margin-x align-middle margin-bottom-2">
+        <div class="cell auto">
+            <h2 class="header-title">
+                <i class="fas fa-users text-primary"></i> Pacientes
+            </h2>
+            <p class="subheader">Gestiona la información de los pacientes registrados en el sistema</p>
+        </div>
+        <div class="cell shrink">
+            {% if user.rol in 'ADMIN JEFE ASISTENTE' %}
+            <a href="{% url 'crear_paciente' %}" class="button primary">
+                <i class="fas fa-plus-circle"></i> Nuevo Paciente
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Buscador Mejorado -->
+    <div class="callout secondary">
+        <div class="grid-x grid-margin-x align-bottom">
+            <div class="cell medium-9">
+                <label class="search-label">
+                    <i class="fas fa-search"></i> Buscar pacientes
+                </label>
+                <div class="input-group">
+                    <span class="input-group-label"><i class="fas fa-filter"></i></span>
+                    <input class="input-group-field" type="text" id="buscador_dinamico" 
+                           placeholder="Nombre, email, teléfono, cédula..." 
+                           value="{{ buscar }}" autocomplete="off">
+                    <span class="input-group-label hide-for-small-only">
+                        <kbd>Ctrl+K</kbd>
+                    </span>
+                </div>
+                <div id="resultado_info" style="display: none;" class="margin-top-1">
+                    <div class="callout success small">
+                        <i class="fas fa-check-circle"></i> 
+                        <strong id="total_encontrados">0</strong> pacientes encontrados
+                        <a href="javascript:limpiarBusqueda()" class="float-right" id="btn_limpiar" style="display: none;">
+                            <i class="fas fa-times-circle"></i> Limpiar
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="cell medium-3">
+                <label class="search-label">&nbsp;</label>
+                <button type="button" class="button expanded secondary" onclick="limpiarBusqueda()">
+                    <i class="fas fa-sync-alt"></i> Mostrar Todos
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas Rápidas -->
+    <div class="grid-x grid-margin-x margin-bottom-2">
+        <div class="cell medium-4">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users fa-2x"></i>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-label">Total Pacientes</span>
+                    <span class="stat-value" id="total_display">{{ total_pacientes }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="cell medium-4">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-male fa-2x"></i>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-label">Hombres</span>
+                    <span class="stat-value" id="total_hombres">{{ total_hombres|default:"0" }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="cell medium-4">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-female fa-2x"></i>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-label">Mujeres</span>
+                    <span class="stat-value" id="total_mujeres">{{ total_mujeres|default:"0" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Pacientes -->
+    <div class="callout">
+        <!-- Barra de herramientas -->
+        <div class="grid-x grid-margin-x align-justify align-middle margin-bottom-1">
+            <div class="cell shrink">
+                <span class="badge primary">
+                    <i class="fas fa-list-ul"></i> 
+                    <span id="rango_mostrado">1 - {{ pacientes|length }}</span> 
+                    de <span id="total_pacientes">{{ total_pacientes }}</span>
+                </span>
+            </div>
+            <div class="cell shrink">
+                <div class="button-group small">
+                    <button class="button hollow" onclick="exportarExcel()" title="Exportar a Excel">
+                        <i class="fas fa-file-excel"></i>
+                    </button>
+                    <button class="button hollow" onclick="exportarPDF()" title="Exportar a PDF">
+                        <i class="fas fa-file-pdf"></i>
+                    </button>
+                    <button class="button hollow" onclick="imprimir()" title="Imprimir">
+                        <i class="fas fa-print"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenedor de tabla con scroll responsivo -->
+        <div class="table-scroll">
+            <table class="hover stack">
+                <thead>
+                    <tr>
+                        <th class="text-center" width="80">Cédula</th>
+                        <th>Paciente</th>
+                        <th class="text-center" width="60">Sexo</th>
+                        <th class="text-center" width="70">Edad</th>
+                        <th width="120">Teléfono</th>
+                        <th>Email</th>
+                        <th class="text-center" width="100">Registro</th>
+                        <th class="text-center" width="100">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla_pacientes">
+                    {% for paciente in pacientes %}
+                    <tr class="paciente-row" data-paciente-id="{{ paciente.id }}">
+                        <td class="text-center">
+                            <span class="badge primary">{{ paciente.ci }}</span>
+                        </td>
+                        <td>
+                            <div class="patient-info">
+                                <div class="patient-avatar">
+                                    {{ paciente.nombre|slice:":1"|upper }}
+                                </div>
+                                <div class="patient-details">
+                                    <strong>{{ paciente.nombre }}</strong>
+                                    <small>
+                                        <i class="fas fa-calendar-alt"></i> 
+                                        Nac: {{ paciente.fecha_nacimiento|date:"d/m/Y" }}
+                                    </small>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge sex-badge {% if paciente.sexo == 'M' %}male{% elif paciente.sexo == 'F' %}female{% else %}other{% endif %}">
+                                {{ paciente.get_sexo_display }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge age-badge">
+                                <i class="fas fa-birthday-cake"></i> {{ paciente.edad }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="tel:{{ paciente.telefono }}" class="contact-link">
+                                <i class="fas fa-phone-alt"></i> {{ paciente.telefono }}
+                            </a>
+                            {% if paciente.telefono_alternativo %}
+                            <br>
+                            <small class="text-muted">
+                                <i class="fas fa-phone"></i> {{ paciente.telefono_alternativo }}
+                            </small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="mailto:{{ paciente.email }}" class="contact-link">
+                                <i class="fas fa-envelope"></i> {{ paciente.email|truncatechars:20 }}
+                            </a>
+                        </td>
+                        <td class="text-center">
+                            <span class="date-badge">
+                                <i class="far fa-calendar"></i> 
+                                {{ paciente.fecha_registro|date:"d/m/y" }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="button-group tiny">
+                                <a href="{% url 'detalle_paciente' paciente.id %}" 
+                                   class="button primary" 
+                                   title="Ver detalle"
+                                   data-tooltip>
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if user.rol in 'ADMIN JEFE ASISTENTE' %}
+                                <a href="{% url 'editar_paciente' paciente.id %}" 
+                                   class="button secondary" 
+                                   title="Editar"
+                                   data-tooltip>
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center empty-state">
+                            <i class="fas fa-user-slash fa-3x"></i>
+                            <h4>No hay pacientes registrados</h4>
+                            <p>Comienza agregando tu primer paciente al sistema</p>
+                            {% if user.rol in 'ADMIN JEFE ASISTENTE' %}
+                            <a href="{% url 'crear_paciente' %}" class="button primary">
+                                <i class="fas fa-plus"></i> Agregar Paciente
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Estados de carga y búsqueda -->
+        <div id="loading" class="text-center loading-state" style="display: none;">
+            <i class="fas fa-spinner fa-spin fa-3x"></i>
+            <p>Buscando pacientes...</p>
+        </div>
+
+        <div id="sin_resultados" class="text-center empty-search" style="display: none;">
+            <i class="fas fa-search fa-3x"></i>
+            <h4>No se encontraron resultados</h4>
+            <p>Prueba con otros términos de búsqueda</p>
+            <button class="button secondary" onclick="limpiarBusqueda()">
+                <i class="fas fa-sync-alt"></i> Ver todos
+            </button>
+        </div>
+
+        <!-- Paginador Mejorado -->
+        <div id="paginador_container">
+            {% if page_obj.has_other_pages %}
+            <div class="grid-x grid-margin-x align-center margin-top-2">
+                <div class="cell auto">
+                    <nav aria-label="Paginación" class="text-center">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                            <li class="pagination-previous">
+                                <a href="?page=1{% if buscar %}&buscar={{ buscar }}{% endif %}" 
+                                   title="Primera página">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="?page={{ page_obj.previous_page_number }}{% if buscar %}&buscar={{ buscar }}{% endif %}">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                <li class="current">
+                                    <span>{{ num }}</span>
+                                </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li>
+                                    <a href="?page={{ num }}{% if buscar %}&buscar={{ buscar }}{% endif %}">
+                                        {{ num }}
+                                    </a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                            <li>
+                                <a href="?page={{ page_obj.next_page_number }}{% if buscar %}&buscar={{ buscar }}{% endif %}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="pagination-next">
+                                <a href="?page={{ page_obj.paginator.num_pages }}{% if buscar %}&buscar={{ buscar }}{% endif %}"
+                                   title="Última página">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                        <p class="page-info">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </p>
+                    </nav>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Estilos Personalizados Mejorados -->
+<style>
+/* Variables de color */
+:root {
+    --primary-color: #1a5276;
+    --secondary-color: #2e86c1;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+}
+
+/* Estilos de encabezado */
+.header-title {
+    font-size: 2rem;
+    font-weight: 300;
+    margin-bottom: 0;
+}
+
+.header-title i {
+    color: var(--primary-color);
+}
+
+/* Tarjetas de estadísticas */
+.stat-card {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0.2rem;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* Información del paciente */
+.patient-info {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.patient-avatar {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.patient-details {
+    flex: 1;
+}
+
+.patient-details small {
+    display: block;
+    color: #666;
+    font-size: 0.75rem;
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.sex-badge.male {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.sex-badge.female {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.age-badge {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.date-badge {
+    background: #f8f9fa;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: #666;
+}
+
+/* Enlaces de contacto */
+.contact-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.2s;
+    display: inline-block;
+}
+
+.contact-link:hover {
+    color: var(--secondary-color);
+}
+
+/* Tabla mejorada */
+.table-scroll {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+table thead th {
+    background: #f8f9fa;
+    color: #333;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    padding: 1rem !important;
+}
+
+table tbody tr {
+    transition: background-color 0.2s;
+}
+
+table tbody tr:hover {
+    background-color: #f5f9ff;
+}
+
+table td {
+    padding: 0.8rem !important;
+    vertical-align: middle;
+}
+
+/* Estados vacíos */
+.empty-state, .empty-search {
+    padding: 3rem !important;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.empty-state i, .empty-search i {
+    color: #ccc;
+    margin-bottom: 1rem;
+}
+
+.empty-state h4, .empty-search h4 {
+    color: #666;
+    margin: 1rem 0;
+}
+
+/* Loading state */
+.loading-state {
+    padding: 3rem;
+    background: rgba(255,255,255,0.9);
+    border-radius: 8px;
+}
+
+.loading-state i {
+    color: var(--primary-color);
+}
+
+.loading-state p {
+    margin-top: 1rem;
+    color: #666;
+}
+
+/* Tooltips */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]:before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.3rem 0.6rem;
+    background: #333;
+    color: white;
+    font-size: 0.7rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    display: none;
+    z-index: 10;
+}
+
+[data-tooltip]:hover:before {
+    display: block;
+}
+
+/* Paginación mejorada */
+.pagination {
+    margin-bottom: 0;
+}
+
+.pagination li {
+    margin: 0 2px;
+}
+
+.pagination li.current span {
+    background: var(--primary-color);
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+}
+
+.pagination li a {
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s;
+}
+
+.pagination li a:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.page-info {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 0.5rem;
+}
+
+/* KBD style */
+kbd {
+    background: #f1f3f5;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    color: #212529;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+}
+
+/* Responsive */
+@media screen and (max-width: 40em) {
+    .header-title {
+        font-size: 1.5rem;
+    }
+    
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+    
+    .button-group.tiny {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+    
+    .button-group.tiny .button {
+        margin: 0;
+        width: 100%;
+    }
+    
+    table td {
+        font-size: 0.8rem;
+    }
+    
+    .pagination li a,
+    .pagination li.current span {
+        padding: 0.3rem 0.6rem;
+    }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.paciente-row {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Variables globales
+let timeoutId = null;
+let searchTimeout = null;
+
+// Función de búsqueda con debounce
+function buscarPacientes() {
+    const query = document.getElementById('buscador_dinamico').value.trim();
+    const loading = document.getElementById('loading');
+    const tabla = document.getElementById('tabla_pacientes');
+    const sinResultados = document.getElementById('sin_resultados');
+    const paginador = document.getElementById('paginador_container');
+    const resultadoInfo = document.getElementById('resultado_info');
+    const totalEncontrados = document.getElementById('total_encontrados');
+    const btnLimpiar = document.getElementById('btn_limpiar');
+    const rangoMostrado = document.getElementById('rango_mostrado');
+    
+    // Mostrar estado de carga
+    loading.style.display = 'block';
+    tabla.closest('.table-scroll').style.display = 'none';
+    sinResultados.style.display = 'none';
+    paginador.style.display = 'none';
+    
+    // Cancelar timeout anterior
+    if (timeoutId) {
+        clearTimeout(timeoutId);
+    }
+    
+    // Debounce de 300ms
+    timeoutId = setTimeout(() => {
+        fetch(`/api/pacientes/buscar/?q=${encodeURIComponent(query)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+                return response.json();
+            })
+            .then(data => {
+                loading.style.display = 'none';
+                
+                if (data.success && data.pacientes.length > 0) {
+                    // Mostrar resultados
+                    tabla.closest('.table-scroll').style.display = 'block';
+                    sinResultados.style.display = 'none';
+                    resultadoInfo.style.display = 'block';
+                    totalEncontrados.textContent = data.total;
+                    btnLimpiar.style.display = query ? 'inline' : 'none';
+                    
+                    // Actualizar tabla
+                    actualizarTabla(data.pacientes);
+                    
+                    // Actualizar contadores
+                    rangoMostrado.textContent = `1 - ${data.pacientes.length}`;
+                    document.getElementById('total_display').textContent = data.total;
+                    
+                    // Actualizar estadísticas si vienen en la respuesta
+                    if (data.estadisticas) {
+                        document.getElementById('total_hombres').textContent = data.estadisticas.hombres || '0';
+                        document.getElementById('total_mujeres').textContent = data.estadisticas.mujeres || '0';
+                    }
+                } else if (query) {
+                    // Sin resultados
+                    tabla.closest('.table-scroll').style.display = 'none';
+                    sinResultados.style.display = 'block';
+                    resultadoInfo.style.display = 'block';
+                    totalEncontrados.textContent = '0';
+                    btnLimpiar.style.display = 'inline';
+                } else {
+                    // Búsqueda vacía - recargar
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loading.style.display = 'none';
+                mostrarNotificacion('Error al buscar pacientes', 'error');
+            });
+    }, 300);
+}
+
+// Función para actualizar la tabla
+function actualizarTabla(pacientes) {
+    const userRoles = '{{ user.rol }}';
+    const puedeEditar = ['ADMIN', 'JEFE', 'ASISTENTE'].includes(userRoles);
+    
+    let html = '';
+    
+    pacientes.forEach(paciente => {
+        html += `
+            <tr class="paciente-row" data-paciente-id="${paciente.id}">
+                <td class="text-center">
+                    <span class="badge primary">${paciente.ci}</span>
+                </td>
+                <td>
+                    <div class="patient-info">
+                        <div class="patient-avatar">
+                            ${paciente.inicial}
+                        </div>
+                        <div class="patient-details">
+                            <strong>${paciente.nombre}</strong>
+                            <small>
+                                <i class="fas fa-calendar-alt"></i> 
+                                Nac: ${paciente.fecha_nacimiento}
+                            </small>
+                        </div>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <span class="badge sex-badge ${paciente.sexo === 'M' ? 'male' : 'female'}">
+                        ${paciente.sexo_display}
+                    </span>
+                </td>
+                <td class="text-center">
+                    <span class="badge age-badge">
+                        <i class="fas fa-birthday-cake"></i> ${paciente.edad}
+                    </span>
+                </td>
+                <td>
+                    <a href="tel:${paciente.telefono}" class="contact-link">
+                        <i class="fas fa-phone-alt"></i> ${paciente.telefono}
+                    </a>
+                    ${paciente.telefono_alternativo ? `
+                    <br>
+                    <small class="text-muted">
+                        <i class="fas fa-phone"></i> ${paciente.telefono_alternativo}
+                    </small>
+                    ` : ''}
+                </td>
+                <td>
+                    <a href="mailto:${paciente.email}" class="contact-link">
+                        <i class="fas fa-envelope"></i> ${paciente.email}
+                    </a>
+                </td>
+                <td class="text-center">
+                    <span class="date-badge">
+                        <i class="far fa-calendar"></i> 
+                        ${paciente.fecha_registro}
+                    </span>
+                </td>
+                <td class="text-center">
+                    <div class="button-group tiny">
+                        <a href="${paciente.url_detalle}" 
+                           class="button primary" 
+                           title="Ver detalle"
+                           data-tooltip="Ver detalle">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        ${puedeEditar ? `
+                        <a href="${paciente.url_editar}" 
+                           class="button secondary" 
+                           title="Editar"
+                           data-tooltip="Editar">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        ` : ''}
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    document.getElementById('tabla_pacientes').innerHTML = html;
+}
+
+// Función para limpiar búsqueda
+function limpiarBusqueda() {
+    document.getElementById('buscador_dinamico').value = '';
+    location.reload();
+}
+
+// Función para mostrar notificaciones
+function mostrarNotificacion(mensaje, tipo = 'success') {
+    const notificacion = document.createElement('div');
+    notificacion.className = `callout ${tipo}`;
+    notificacion.style.position = 'fixed';
+    notificacion.style.top = '20px';
+    notificacion.style.right = '20px';
+    notificacion.style.zIndex = '1000';
+    notificacion.style.animation = 'slideIn 0.3s ease';
+    notificacion.innerHTML = `
+        <i class="fas fa-${tipo === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        ${mensaje}
+    `;
+    
+    document.body.appendChild(notificacion);
+    
+    setTimeout(() => {
+        notificacion.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notificacion.remove(), 300);
+    }, 3000);
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('buscador_dinamico');
+    
+    // Búsqueda en tiempo real
+    input.addEventListener('input', buscarPacientes);
+    
+    // Atajo de teclado Ctrl+K
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey && e.key === 'k') || e.key === '/') {
+            e.preventDefault();
+            input.focus();
+            input.select();
+        }
+        
+        // Escape para limpiar
+        if (e.key === 'Escape' && document.activeElement === input) {
+            limpiarBusqueda();
+        }
+    });
+    
+    // Mostrar botón limpiar si hay búsqueda activa
+    if (input.value.trim()) {
+        document.getElementById('btn_limpiar').style.display = 'inline';
+        document.getElementById('resultado_info').style.display = 'block';
+    }
+    
+    // Inicializar tooltips
+    const tooltips = document.querySelectorAll('[data-tooltip]');
+    tooltips.forEach(el => {
+        el.setAttribute('data-tooltip', el.title);
+        el.removeAttribute('title');
+    });
+});
+
+// Funciones de exportación (placeholder)
+function exportarExcel() {
+    mostrarNotificacion('Exportando a Excel...', 'info');
+    // Implementar lógica de exportación
+}
+
+function exportarPDF() {
+    mostrarNotificacion('Exportando a PDF...', 'info');
+    // Implementar lógica de exportación
+}
+
+function imprimir() {
+    window.print();
+}
+</script>
+
+<style>
+/* Animaciones adicionales */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Estilo para impresión */
+@media print {
+    .button-group,
+    .pagination,
+    #buscador_dinamico,
+    .callout.secondary,
+    .stat-card {
+        display: none !important;
+    }
+    
+    table {
+        border: 1px solid #ddd;
+    }
+    
+    table thead th {
+        background: #f8f9fa !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+</style>
+{% endblock %}

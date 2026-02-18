@@ -1,0 +1,96 @@
+{% extends 'core/base.html' %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+
+{% block contenido %}
+<div class="grid-x grid-padding-x">
+    <div class="cell medium-8 large-6">
+        <div class="callout">
+            <h3><i class="fas fa-user-md"></i> {{ titulo }}</h3>
+            <hr>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="grid-x grid-padding-x">
+                    <div class="cell medium-12">
+                        <label>Nombre Completo *
+                            {{ form.nombre }}
+                            {% if form.nombre.errors %}
+                                <small class="error">{{ form.nombre.errors.0 }}</small>
+                            {% endif %}
+                        </label>
+                    </div>
+                    
+                    <div class="cell medium-6">
+                        <label>Especialidad *
+                            {{ form.especialidad }}
+                            {% if form.especialidad.errors %}
+                                <small class="error">{{ form.especialidad.errors.0 }}</small>
+                            {% endif %}
+                        </label>
+                    </div>
+                    
+                    <div class="cell medium-6">
+                        <label>Teléfono *
+                            {{ form.telefono }}
+                            {% if form.telefono.errors %}
+                                <small class="error">{{ form.telefono.errors.0 }}</small>
+                            {% endif %}
+                        </label>
+                    </div>
+                    
+                    <div class="cell medium-6">
+                        <label>Costo de Consulta ($)
+                            {{ form.costo_consulta }}
+                            {% if form.costo_consulta.errors %}
+                                <small class="error">{{ form.costo_consulta.errors.0 }}</small>
+                            {% endif %}
+                        </label>
+                    </div>
+                    
+                    <div class="cell medium-6">
+                        <label>Estado
+                            {{ form.activo }}
+                            <small style="color: #666;">Marcar para que aparezca en listados</small>
+                        </label>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="grid-x grid-padding-x">
+                    <div class="cell">
+                        <a href="{% url 'lista_doctores' %}" class="button secondary">
+                            <i class="fas fa-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="button primary float-right">
+                            <i class="fas fa-save"></i> Guardar Doctor
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Ayuda -->
+    <div class="cell medium-4 large-6">
+        <div class="callout info">
+            <h5><i class="fas fa-info-circle"></i> Información</h5>
+            <ul class="no-bullet">
+                <li><i class="fas fa-check"></i> El nombre debe ser completo</li>
+                <li><i class="fas fa-check"></i> Selecciona la especialidad correcta</li>
+                <li><i class="fas fa-check"></i> El teléfono debe incluir código de área</li>
+                <li><i class="fas fa-check"></i> El costo es en moneda local</li>
+            </ul>
+        </div>
+        
+        {% if accion == 'crear' %}
+        <div class="callout warning">
+            <h5><i class="fas fa-lightbulb"></i> Tip</h5>
+            <p>Después de registrar al doctor, puedes crearle un usuario para que acceda al sistema y gestione sus propias citas.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

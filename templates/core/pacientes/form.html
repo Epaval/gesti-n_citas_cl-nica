@@ -1,0 +1,340 @@
+{% extends 'core/base.html' %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+
+{% block contenido %}
+<div class="grid-container">
+    <div class="grid-x grid-margin-x align-center">
+        <!-- Formulario Principal -->
+        <div class="cell large-8">
+            <div class="callout">
+                <div class="grid-x grid-margin-x align-middle">
+                    <div class="cell auto">
+                        <h3><i class="fas fa-user-plus"></i> {{ titulo }}</h3>
+                    </div>
+                    {% if form.instance.pk %}
+                    <div class="cell shrink">
+                        <span class="label warning"><i class="fas fa-edit"></i> Modo Edición</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <hr>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Sección: Identificación -->
+                    <div class="grid-x grid-margin-x">
+                        <div class="cell small-12">
+                            <h5 class="subheader"><i class="fas fa-id-card"></i> Identificación</h5>
+                        </div>
+                        
+                        <div class="cell medium-6 large-6">
+                            <label class="form-label">
+                                {{ form.ci.label }} <span class="required">*</span>
+                            </label>
+                            {{ form.ci }}
+                            {% if form.ci.errors %}
+                            <span class="label alert">{{ form.ci.errors.0 }}</span>
+                            {% endif %}
+                            <p class="help-text" id="ci-help">
+                                {% if form.instance.pk %}
+                                <i class="fas fa-lock"></i> La cédula no se puede modificar
+                                {% else %}
+                                Formato: V-12345678 o E-87654321
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <div class="cell medium-6 large-6">
+                            <label class="form-label">
+                                {{ form.nombre.label }} <span class="required">*</span>
+                            </label>
+                            {{ form.nombre }}
+                            {% if form.nombre.errors %}
+                            <span class="label alert">{{ form.nombre.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Sección: Datos Personales -->
+                    <div class="grid-x grid-margin-x">
+                        <div class="cell small-12">
+                            <h5 class="subheader"><i class="fas fa-user"></i> Datos Personales</h5>
+                        </div>
+                        
+                        <div class="cell medium-4">
+                            <label class="form-label">
+                                {{ form.sexo.label }} <span class="required">*</span>
+                            </label>
+                            {{ form.sexo }}
+                            {% if form.sexo.errors %}
+                            <span class="label alert">{{ form.sexo.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="cell medium-4">
+                            <label class="form-label">
+                                {{ form.fecha_nacimiento.label }} <span class="required">*</span>
+                            </label>
+                            {{ form.fecha_nacimiento }}
+                            {% if form.fecha_nacimiento.errors %}
+                            <span class="label alert">{{ form.fecha_nacimiento.errors.0 }}</span>
+                            {% endif %}
+                            <p class="help-text">
+                                {% if form.instance.pk %}
+                                <i class="fas fa-lock"></i> La fecha no se puede modificar
+                                {% else %}
+                                <i class="fas fa-calendar-alt"></i> La edad se calculará automáticamente
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <div class="cell medium-4">
+                            <label class="form-label">Edad</label>
+                            <div class="input-group">
+                                <span class="input-group-label"><i class="fas fa-calendar-check"></i></span>
+                                <div class="input-group-field" id="edad_calculada" style="background: #f5f5f5; line-height: 2.5;">
+                                    {% if form.instance.pk and form.instance.fecha_nacimiento %}
+                                    <strong>{{ form.instance.edad }} años</strong>
+                                    {% else %}
+                                    Se calculará al guardar
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <p class="help-text"><i class="fas fa-info-circle"></i> Calculada desde fecha de nacimiento</p>
+                        </div>
+                    </div>
+
+                    <!-- Sección: Contacto -->
+                    <div class="grid-x grid-margin-x">
+                        <div class="cell small-12">
+                            <h5 class="subheader"><i class="fas fa-phone"></i> Contacto</h5>
+                        </div>
+                        
+                        <div class="cell medium-6">
+                            <label class="form-label">
+                                {{ form.telefono.label }} <span class="required">*</span>
+                            </label>
+                            {{ form.telefono }}
+                            {% if form.telefono.errors %}
+                            <span class="label alert">{{ form.telefono.errors.0 }}</span>
+                            {% endif %}
+                            <p class="help-text">
+                                <i class="fas fa-info-circle"></i> Ej: 0412-1234567, 0241-5551234
+                            </p>
+                        </div>
+
+                        <div class="cell medium-6">
+                            <label class="form-label">{{ form.telefono_alternativo.label }}</label>
+                            {{ form.telefono_alternativo }}
+                            {% if form.telefono_alternativo.errors %}
+                            <span class="label alert">{{ form.telefono_alternativo.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="cell medium-6">
+                            <label class="form-label">{{ form.email.label }}</label>
+                            <div class="input-group">
+                                <span class="input-group-label"><i class="fas fa-envelope"></i></span>
+                                {{ form.email }}
+                            </div>
+                            {% if form.email.errors %}
+                            <span class="label alert">{{ form.email.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="cell medium-6">
+                            <label class="form-label">{{ form.direccion.label }}</label>
+                            {{ form.direccion }}
+                            {% if form.direccion.errors %}
+                            <span class="label alert">{{ form.direccion.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Botones de Acción -->
+                    <div class="grid-x grid-margin-x align-justify">
+                        <div class="cell shrink">
+                            <a href="{% url 'lista_pacientes' %}" class="button secondary">
+                                <i class="fas fa-arrow-left"></i> Cancelar
+                            </a>
+                        </div>
+                        <div class="cell shrink">
+                            <button type="submit" class="button success">
+                                <i class="fas fa-save"></i> Guardar Paciente
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Panel de Ayuda y Requisitos -->
+        <div class="cell large-4">
+            <div class="callout info">
+                <h5><i class="fas fa-info-circle"></i> Información</h5>
+                <hr>
+                
+                <div class="grid-x grid-margin-x">
+                    <div class="cell small-12">
+                        <h6 class="subheader"><i class="fas fa-check-circle text-success"></i> Requisitos:</h6>
+                        <ul class="no-bullet">
+                            <li><i class="fas fa-check text-success"></i> <span class="required">*</span> Campos obligatorios</li>
+                            <li><i class="fas fa-check text-success"></i> Email debe ser único</li>
+                            <li><i class="fas fa-check text-success"></i> Edad calculada automáticamente</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="cell small-12">
+                        <h6 class="subheader"><i class="fas fa-phone-alt"></i> Formatos de teléfono:</h6>
+                        <ul class="no-bullet">
+                            <li><i class="fas fa-mobile-alt"></i> Móvil: 0412-1234567</li>
+                            <li><i class="fas fa-phone"></i> Fijo: 0241-5551234</li>
+                            <li><i class="fas fa-phone"></i> Alternativo: 555-0104</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="cell small-12">
+                        <div class="callout secondary">
+                            <p class="text-center"><i class="fas fa-shield-alt fa-2x"></i></p>
+                            <p class="text-center"><small>Los datos están protegidos según la normativa de protección de datos</small></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Estilos personalizados */
+.required {
+    color: #cc4b37;
+    font-weight: bold;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.3rem;
+    display: block;
+}
+
+/* Estilo para campos readonly */
+input[readonly], 
+textarea[readonly], 
+select[readonly] {
+    background-color: #f5f5f5 !important;
+    cursor: not-allowed;
+    opacity: 0.8;
+    border-color: #ddd;
+}
+
+input[readonly]:focus, 
+textarea[readonly]:focus {
+    border-color: #ddd;
+    box-shadow: none;
+}
+
+/* Mejoras en inputs */
+input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+    border-radius: 4px;
+    transition: border-color 0.3s ease;
+}
+
+input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):focus,
+select:focus,
+textarea:focus {
+    border-color: #1779ba;
+    box-shadow: 0 0 5px rgba(23, 121, 186, 0.3);
+}
+
+/* Input group mejorado */
+.input-group-field {
+    border-radius: 0 4px 4px 0;
+}
+
+.input-group-label {
+    border-radius: 4px 0 0 4px;
+    background-color: #f5f5f5;
+}
+
+/* Estilo para mensajes de error */
+.label.alert {
+    margin-top: 5px;
+    display: inline-block;
+    font-size: 0.8rem;
+}
+
+/* Mejora visual para subheaders */
+.subheader {
+    color: #1779ba;
+    border-left: 4px solid #1779ba;
+    padding-left: 10px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+/* Separador sutil */
+hr {
+    opacity: 0.3;
+    margin: 15px 0;
+}
+
+/* Responsive adicional */
+@media screen and (max-width: 40em) {
+    .callout {
+        padding: 1rem;
+    }
+    
+    .button {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .align-justify .cell {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Animaciones suaves */
+.button {
+    transition: all 0.3s ease;
+}
+
+.button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Tooltips personalizados */
+.help-text {
+    color: #6f6f6f;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.help-text i {
+    color: #1779ba;
+}
+
+/* Badge para modo edición */
+.label.warning {
+    background-color: #ffae00;
+    color: #333;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+/* Espaciado entre secciones */
+.grid-margin-x > .cell {
+    margin-bottom: 10px;
+}
+</style>
+{% endblock %}

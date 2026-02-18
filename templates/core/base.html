@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block titulo %}Sistema de Citas Médicas{% endblock %}</title>
+    
+    <!-- Foundation CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/css/foundation.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+      .top-bar { background: #1a5276; }
+        .top-bar a { color: white; }
+        .top-bar ul { background: #1a5276; }
+        .menu-text { color: white !important; font-weight: bold; }
+        .card { margin-bottom: 20px; }
+        .stat-card { text-align: center; padding: 20px; }
+        .stat-number { font-size: 2.5em; font-weight: bold; color: #1a5276; }
+        .stat-label { color: #666; }
+        .badge-PROGRAMADA { background: #3498db; }
+        .badge-COMPLETADA { background: #27ae60; }
+        .badge-CANCELADA { background: #e74c3c; }
+        .badge-EN_ESPERA { background: #f39c12; }
+
+    
+    /* Paginación Foundation Mejorada */
+    .pagination .current span {
+        background: #1a5276;
+        color: white;
+        border-radius: 3px;
+    }
+    
+    .pagination a {
+        color: #1a5276;
+        border-radius: 3px;
+        margin: 0 2px;
+    }
+    
+    .pagination a:hover {
+        background: #e8f4f8;
+    }
+    
+    .pagination-previous.disabled,
+    .pagination-next.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+    
+    /* Tablas Responsivas */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table.hover tbody tr:hover {
+        background-color: #f9f9f9;
+        transition: background-color 0.2s ease;
+    }
+</style>
+   
+   
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Barra de Navegación -->
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <ul class="menu">
+                <li class="menu-text"><i class="fas fa-hospital"></i> Consultorio Médico</li>
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Inicio</a></li>
+                <li><a href="{% url 'lista_pacientes' %}"><i class="fas fa-users"></i> Pacientes</a></li>
+                <li><a href="{% url 'lista_doctores' %}"><i class="fas fa-user-md"></i> Doctores</a></li>
+                <li><a href="{% url 'lista_citas' %}"><i class="fas fa-calendar"></i> Citas</a></li>
+                {% endif %}
+            </ul>
+        </div>
+        <div class="top-bar-right">
+            <ul class="menu">
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'perfil' %}"><i class="fas fa-user"></i> {{ user.username }}</a></li>
+                <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Mensajes -->
+    <div class="grid-container" style="margin-top: 20px;">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="callout {% if message.tags == 'error' %}alert{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block contenido %}{% endblock %}
+    </div>
+
+    <!-- Foundation JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/js/foundation.min.js"></script>
+    <script>
+        $(document).foundation();
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

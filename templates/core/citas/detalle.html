@@ -1,0 +1,223 @@
+{% extends 'core/base.html' %}
+
+{% block titulo %}Detalle de Cita #{{ cita.id }}{% endblock %}
+
+{% block contenido %}
+<div class="grid-x grid-padding-x">
+    <!-- Columna Principal -->
+    <div class="cell medium-8 large-9">
+        
+        <!-- Encabezado -->
+        <div class="callout {{ cita.estado|lower }}">
+            <div class="grid-x grid-padding-x align-center">
+                <div class="cell small-auto">
+                    <h2 style="margin: 0;"><i class="fas fa-calendar-check"></i> Cita #{{ cita.id }}</h2>
+                </div>
+                <div class="cell small-auto">
+                    <span class="badge badge-{{ cita.estado }}" style="font-size: 1.2em;">
+                        {{ cita.get_estado_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información de la Cita -->
+        <div class="callout">
+            <h4><i class="fas fa-info-circle"></i> Información de la Cita</h4>
+            <hr>
+            
+            <div class="grid-x grid-padding-x small-up-1 medium-up-2">
+                <div class="cell">
+                    <p><strong><i class="fas fa-calendar"></i> Fecha:</strong><br>
+                    {{ cita.fecha|date:"l, d \d\e F \d\e Y" }}</p>
+                </div>
+                <div class="cell">
+                    <p><strong><i class="fas fa-clock"></i> Hora:</strong><br>
+                    {{ cita.hora|time:"H:i" }} hrs</p>
+                </div>
+                <div class="cell">
+                    <p><strong><i class="fas fa-file-alt"></i> Motivo:</strong><br>
+                    {{ cita.motivo }}</p>
+                </div>
+                <div class="cell">
+                    <p><strong><i class="fas fa-user-edit"></i> Creado por:</strong><br>
+                    {% if cita.creado_por %}
+                        {{ cita.creado_por.username }} ({{ cita.creado_por.get_rol_display }})
+                    {% else %}
+                        No especificado
+                    {% endif %}</p>
+                </div>
+                <div class="cell">
+                    <p><strong><i class="fas fa-calendar-plus"></i> Fecha de Registro:</strong><br>
+                    {{ cita.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                </div>
+                <div class="cell">
+                    <p><strong><i class="fas fa-dollar-sign"></i> Costo de Consulta:</strong><br>
+                    ${{ cita.doctor.costo_consulta|floatformat:2 }} MXN</p>
+                </div>
+            </div>
+
+            {% if cita.diagnostico %}
+            <div class="callout success" style="margin-top: 20px;">
+                <h5><i class="fas fa-stethoscope"></i> Diagnóstico</h5>
+                <p>{{ cita.diagnostico }}</p>
+                <p><small><strong>Fecha de completado:</strong> {{ cita.fecha|date:"d/m/Y" }}</small></p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Información del Paciente -->
+        <div class="callout primary">
+            <h4><i class="fas fa-user"></i> Información del Paciente</h4>
+            <hr>
+            
+            <div class="grid-x grid-padding-x small-up-1 medium-up-2">
+                <div class="cell">
+                    <p><strong>Nombre:</strong><br>{{ cita.paciente.nombre }}</p>
+                </div>
+                <div class="cell">
+                    <p><strong>Edad:</strong><br>{{ cita.paciente.edad }} años</p>
+                </div>
+                <div class="cell">
+                    <p><strong>Teléfono:</strong><br>
+                    <a href="tel:{{ cita.paciente.telefono }}">{{ cita.paciente.telefono }}</a></p>
+                </div>
+                <div class="cell">
+                    <p><strong>Email:</strong><br>
+                    <a href="mailto:{{ cita.paciente.email }}">{{ cita.paciente.email }}</a></p>
+                </div>
+            </div>
+            
+            <a href="{% url 'detalle_paciente' cita.paciente.id %}" class="button small secondary">
+                <i class="fas fa-eye"></i> Ver Historial del Paciente
+            </a>
+        </div>
+
+        <!-- Información del Doctor -->
+        <div class="callout secondary">
+            <h4><i class="fas fa-user-md"></i> Información del Doctor</h4>
+            <hr>
+            
+            <div class="grid-x grid-padding-x small-up-1 medium-up-2">
+                <div class="cell">
+                    <p><strong>Nombre:</strong><br>{{ cita.doctor.nombre }}</p>
+                </div>
+                <div class="cell">
+                    <p><strong>Especialidad:</strong><br>{{ cita.doctor.get_especialidad_display }}</p>
+                </div>
+                <div class="cell">
+                    <p><strong>Teléfono:</strong><br>
+                    <a href="tel:{{ cita.doctor.telefono }}">{{ cita.doctor.telefono }}</a></p>
+                </div>
+                <div class="cell">
+                    <p><strong>Costo Consulta:</strong><br>${{ cita.doctor.costo_consulta|floatformat:2 }} MXN</p>
+                </div>
+            </div>
+            
+            <a href="{% url 'detalle_doctor' cita.doctor.id %}" class="button small secondary">
+                <i class="fas fa-eye"></i> Ver Perfil del Doctor
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Columna Lateral (Acciones) -->
+    <div class="cell medium-4 large-3">
+        
+        <!-- Acciones Disponibles -->
+        <div class="callout">
+            <h5><i class="fas fa-tools"></i> Acciones</h5>
+            <hr>
+            
+            <div class="button-group vertical expanded">
+                <a href="{% url 'lista_citas' %}" class="button secondary">
+                    <i class="fas fa-arrow-left"></i> Volver a Citas
+                </a>
+                
+                {% if cita.estado == 'PROGRAMADA' %}
+                    <!-- Cancelar Cita -->
+                    {% if user.rol in 'ADMIN JEFE ASISTENTE' %}
+                    <a href="{% url 'cancelar_cita' cita.id %}" class="button alert"
+                       onclick="return confirm('¿Estás seguro de que deseas cancelar esta cita? Esta acción no se puede deshacer.')">
+                        <i class="fas fa-times"></i> Cancelar Cita
+                    </a>
+                    {% endif %}
+                    
+                    <!-- Completar Cita -->
+                    {% if user.rol in 'ADMIN JEFE MEDICO' %}
+                        {% if user.rol == 'MEDICO' and user.perfil_medico == cita.doctor %}
+                        <a href="{% url 'completar_cita' cita.id %}" class="button success">
+                            <i class="fas fa-check"></i> Completar Cita
+                        </a>
+                        {% elif user.rol in 'ADMIN JEFE' %}
+                        <a href="{% url 'completar_cita' cita.id %}" class="button success">
+                            <i class="fas fa-check"></i> Completar Cita
+                        </a>
+                        {% else %}
+                        <button class="button success" disabled title="Solo el doctor asignado puede completar">
+                            <i class="fas fa-lock"></i> Solo Doctor Asignado
+                        </button>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <!-- Reagendar (futuro) -->
+                    <button class="button warning" disabled title="Próximamente">
+                        <i class="fas fa-calendar-alt"></i> Reagendar
+                    </button>
+                {% endif %}
+                
+                {% if cita.estado == 'CANCELADA' %}
+                <div class="callout alert" style="margin-top: 15px;">
+                    <small><i class="fas fa-exclamation-triangle"></i> Esta cita ha sido cancelada</small>
+                </div>
+                {% endif %}
+                
+                {% if cita.estado == 'COMPLETADA' %}
+                <div class="callout success" style="margin-top: 15px;">
+                    <small><i class="fas fa-check-circle"></i> Esta cita ha sido completada</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Estado Rápido -->
+        <div class="callout {{ cita.estado|lower }}">
+            <h5><i class="fas fa-chart-pie"></i> Estado Actual</h5>
+            <hr>
+            <div class="text-center">
+                <i class="fas fa-{{ cita.estado|lower|slice:':-1' }}-circle fa-3x" style="margin-bottom: 10px;"></i>
+                <p class="lead">{{ cita.get_estado_display }}</p>
+            </div>
+        </div>
+
+        <!-- Historial de Cambios (futuro) -->
+        <div class="callout secondary">
+            <h5><i class="fas fa-history"></i> Actividad</h5>
+            <hr>
+            <ul class="no-bullet">
+                <li><small><i class="fas fa-plus-circle"></i> Creada: {{ cita.fecha_creacion|date:"d/m/Y" }}</small></li>
+                {% if cita.estado == 'COMPLETADA' %}
+                <li><small><i class="fas fa-check-circle"></i> Completada: {{ cita.fecha|date:"d/m/Y" }}</small></li>
+                {% endif %}
+                {% if cita.estado == 'CANCELADA' %}
+                <li><small><i class="fas fa-times-circle"></i> Cancelada: {{ cita.fecha|date:"d/m/Y" }}</small></li>
+                {% endif %}
+            </ul>
+        </div>
+
+    </div>
+</div>
+
+<!-- Estilos Personalizados para Estados -->
+<style>
+    .callout.programada { border-left: 5px solid #3498db; }
+    .callout.completada { border-left: 5px solid #27ae60; }
+    .callout.cancelada { border-left: 5px solid #e74c3c; }
+    .callout.en_espera { border-left: 5px solid #f39c12; }
+    
+    .badge-PROGRAMADA { background: #3498db; }
+    .badge-COMPLETADA { background: #27ae60; }
+    .badge-CANCELADA { background: #e74c3c; }
+    .badge-EN_ESPERA { background: #f39c12; }
+</style>
+{% endblock %}
