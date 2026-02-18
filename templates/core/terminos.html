@@ -1,0 +1,1101 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block titulo %}Términos y Condiciones | Sistema de Citas Médicas{% endblock %}</title>
+    <meta name="description" content="Descubre las ventajas de agendar citas médicas en línea: ahorro de tiempo, historial digitalizado, acceso desde cualquier dispositivo y atención personalizada con tu médico de confianza.">
+    
+    <!-- Foundation CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/css/foundation.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* ========================================
+           VARIABLES - COINCIDEN CON TU SITIO
+           ======================================== */
+        :root {
+            --primary: #1a5276;
+            --primary-dark: #154360;
+            --primary-light: #2874a6;
+            --primary-gradient: linear-gradient(135deg, #1a5276 0%, #2874a6 100%);
+            
+            --secondary: #f8f9fa;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --info: #3498db;
+            
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            --radius: 0.5rem;
+            --radius-lg: 1rem;
+            --radius-xl: 1.5rem;
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+            --transition: 250ms ease;
+        }
+
+        /* ========================================
+           BASE Y RESET
+           ======================================== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: var(--font-sans);
+            color: var(--gray-700);
+            line-height: 1.6;
+            background: var(--gray-50);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .terms-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* ========================================
+           HEADER DE LA PÁGINA - MATCH FOOTER STYLE
+           ======================================== */
+        .terms-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2.5rem 2rem;
+            background: var(--gray-900);
+            border-radius: var(--radius-xl);
+            color: white;
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .terms-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 25s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .terms-header i {
+            font-size: 3.5rem;
+            color: var(--info);
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.2rem;
+            border-radius: 9999px;
+            position: relative;
+            z-index: 1;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .terms-header h1 {
+            font-size: clamp(2rem, 5vw, 2.8rem);
+            font-weight: 700;
+            margin: 0.5rem 0;
+            letter-spacing: -0.025em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .terms-header .subtitle {
+            font-size: 1.2rem;
+            color: var(--gray-300);
+            max-width: 700px;
+            margin: 0.5rem auto 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .terms-header .last-updated {
+            font-size: 0.9rem;
+            color: var(--gray-400);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ========================================
+           TARJETA DE BIENVENIDA / CTA
+           ======================================== */
+        .welcome-card {
+            background: linear-gradient(135deg, var(--primary-light) 0%, white 100%);
+            border-left: 5px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin-bottom: 3rem;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-card::before {
+            content: '✨';
+            position: absolute;
+            right: 1.5rem;
+            top: 1.5rem;
+            font-size: 3rem;
+            opacity: 0.15;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .welcome-card h2 {
+            color: var(--primary-dark);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-card p {
+            font-size: 1.1rem;
+            color: var(--gray-700);
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.75rem;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all var(--transition);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-outline {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.75rem;
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all var(--transition);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* ========================================
+           GRID DE VENTAJAS PRINCIPALES
+           ======================================== */
+        .advantages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .advantage-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-200);
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .advantage-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary-gradient);
+            opacity: 0;
+            transition: opacity var(--transition);
+        }
+
+        .advantage-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--primary-light);
+        }
+
+        .advantage-card:hover::before {
+            opacity: 1;
+        }
+
+        .advantage-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+            box-shadow: var(--shadow);
+        }
+
+        .advantage-icon i {
+            font-size: 1.8rem;
+            color: white;
+        }
+
+        .advantage-card h3 {
+            color: var(--gray-900);
+            font-size: 1.3rem;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .advantage-card p {
+            color: var(--gray-600);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .advantage-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0 0;
+        }
+
+        .advantage-card ul li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0;
+            font-size: 0.9rem;
+            color: var(--gray-600);
+        }
+
+        .advantage-card ul li i {
+            color: var(--success);
+            font-size: 0.85rem;
+        }
+
+        /* ========================================
+           SECCIONES DE INFORMACIÓN
+           ======================================== */
+        .info-section {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--gray-200);
+            box-shadow: var(--shadow);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .section-title i {
+            font-size: 1.8rem;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 0.75rem;
+            border-radius: var(--radius);
+        }
+
+        .section-title h2 {
+            font-size: 1.6rem;
+            color: var(--gray-900);
+            font-weight: 600;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: var(--radius);
+            transition: background var(--transition);
+        }
+
+        .feature-item:hover {
+            background: var(--primary-50);
+        }
+
+        .feature-item i {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-top: 0.2rem;
+        }
+
+        .feature-item strong {
+            display: block;
+            color: var(--gray-900);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .feature-item span {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+
+        /* ========================================
+           PROCESO DE USO - TIMELINE
+           ======================================== */
+        .process-section {
+            background: linear-gradient(135deg, var(--gray-900) 0%, var(--gray-800) 100%);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin: 3rem 0;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .process-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+            animation: rotate 30s linear infinite;
+            pointer-events: none;
+        }
+
+        .process-section .section-title {
+            border-bottom-color: rgba(255,255,255,0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .process-section .section-title i {
+            background: rgba(255,255,255,0.15);
+            color: var(--info);
+        }
+
+        .process-section .section-title h2 {
+            color: white;
+        }
+
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .process-step {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: var(--radius);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform var(--transition);
+        }
+
+        .process-step:hover {
+            transform: translateY(-4px);
+            background: rgba(255,255,255,0.15);
+        }
+
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--info);
+            color: white;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .process-step i {
+            font-size: 2rem;
+            color: var(--info);
+            margin: 0.5rem 0;
+        }
+
+        .process-step h4 {
+            color: white;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .process-step p {
+            color: var(--gray-300);
+            font-size: 0.9rem;
+        }
+
+        /* ========================================
+           COMPARTIR HISTORIAL - CARDS INTERACTIVAS
+           ======================================== */
+        .sharing-section {
+            text-align: center;
+            margin: 3rem 0;
+        }
+
+        .sharing-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .sharing-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 2rem 1.5rem;
+            box-shadow: var(--shadow);
+            border: 2px solid transparent;
+            transition: all var(--transition);
+            cursor: pointer;
+        }
+
+        .sharing-card:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .sharing-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .sharing-card.whatsapp i { color: #25D366; }
+        .sharing-card.email i { color: var(--danger); }
+        .sharing-card.telegram i { color: #0088cc; }
+        .sharing-card.download i { color: var(--primary); }
+
+        .sharing-card h4 {
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .sharing-card p {
+            color: var(--gray-600);
+            font-size: 0.85rem;
+        }
+
+        /* ========================================
+           TESTIMONIOS / CONFIANZA
+           ======================================== */
+        .trust-section {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin: 2rem 0;
+            border: 1px solid var(--gray-200);
+            box-shadow: var(--shadow);
+        }
+
+        .trust-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .trust-item i {
+            font-size: 2.5rem;
+            color: var(--success);
+            margin-bottom: 1rem;
+        }
+
+        .trust-item h4 {
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .trust-item p {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+
+        .trust-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+
+        /* ========================================
+           FOOTER DE LA PÁGINA - MATCH SITIO PRINCIPAL
+           ======================================== */
+        .terms-footer {
+            background: var(--gray-900);
+            color: rgba(255,255,255,0.85);
+            padding: 1.5rem 0;
+            margin-top: auto;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .terms-footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            text-align: center;
+        }
+
+        .terms-footer a {
+            color: var(--info);
+            text-decoration: none;
+            transition: color var(--transition);
+        }
+
+        .terms-footer a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
+        /* ========================================
+           BOTÓN DE REGRESO
+           ======================================== */
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 2rem;
+            transition: all var(--transition);
+            border: none;
+            cursor: pointer;
+        }
+
+        .back-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* ========================================
+           RESPONSIVE
+           ======================================== */
+        @media (max-width: 768px) {
+            .terms-header { padding: 2rem 1.5rem; }
+            .terms-header h1 { font-size: 2rem; }
+            .welcome-card { padding: 1.5rem; }
+            .info-section { padding: 2rem 1.5rem; }
+            .process-section { padding: 2rem 1.5rem; }
+            .cta-buttons { justify-content: center; }
+            .trust-stats { gap: 1.5rem; }
+        }
+
+        @media (max-width: 480px) {
+            .terms-container { padding: 1rem; }
+            .terms-header { padding: 1.5rem 1rem; }
+            .terms-header h1 { font-size: 1.5rem; }
+            .welcome-card h2 { font-size: 1.4rem; }
+            .advantage-card { padding: 1.5rem; }
+            .info-section { padding: 1.5rem; }
+            .process-steps { grid-template-columns: 1fr; }
+            .sharing-cards { grid-template-columns: repeat(2, 1fr); }
+            .trust-stats { flex-direction: column; gap: 1rem; }
+        }
+
+        /* ========================================
+           ANIMACIONES DE ENTRADA
+           ======================================== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-on-scroll {
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        .animate-on-scroll:nth-child(1) { animation-delay: 0.1s; }
+        .animate-on-scroll:nth-child(2) { animation-delay: 0.2s; }
+        .animate-on-scroll:nth-child(3) { animation-delay: 0.3s; }
+        .animate-on-scroll:nth-child(4) { animation-delay: 0.4s; }
+
+        /* ========================================
+           IMPRESIÓN
+           ======================================== */
+        @media print {
+            .terms-header { background: none; color: black; box-shadow: none; }
+            .welcome-card { border: 2px solid black; }
+            .process-section { background: none; color: black; }
+            .back-button, .cta-buttons { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Botón de regreso -->
+    <div class="terms-container" style="padding-bottom: 0;">
+        {% if user.is_authenticated %}
+        <a href="{% url 'dashboard' %}" class="back-button">
+            <i class="fas fa-arrow-left"></i> Volver al Dashboard
+        </a>
+        {% else %}
+        <a href="{% url 'login' %}" class="back-button">
+            <i class="fas fa-arrow-left"></i> Volver al Inicio
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="terms-container">
+        
+        <!-- Encabezado -->
+        <header class="terms-header">
+            <i class="fas fa-file-contract"></i>
+            <h1>Términos y Condiciones del Servicio</h1>
+            <p class="subtitle">Descubre cómo nuestra plataforma transforma tu experiencia médica</p>
+            <div class="last-updated">
+                <i class="fas fa-calendar-alt"></i> Última actualización: {% now "d/m/Y" %}
+            </div>
+        </header>
+
+        <!-- Tarjeta de bienvenida / CTA -->
+        <div class="welcome-card">
+            <h2>
+                <i class="fas fa-heartbeat"></i>
+                Tu salud, simplificada
+            </h2>
+            <p>Agendar una cita con tu médico de confianza nunca fue tan fácil. Nuestra plataforma digital te ofrece control total sobre tu tiempo, acceso inmediato a tu historial médico y la tranquilidad de saber que tu información está protegida.</p>
+            <div class="cta-buttons">
+                {% if user.is_authenticated %}
+                <a href="{% url 'lista_citas' %}" class="btn-primary">
+                    <i class="fas fa-calendar-plus"></i> Agendar mi próxima cita
+                </a>
+                <a href="{% url 'ver_expediente' user.paciente.id|default:1 %}" class="btn-outline">
+                    <i class="fas fa-folder-medical"></i> Ver mi expediente
+                </a>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar sesión para agendar
+                </a>
+                <a href="#ventajas" class="btn-outline">
+                    <i class="fas fa-circle-info"></i> Conocer más ventajas
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Grid de ventajas principales -->
+        <div class="advantages-grid" id="ventajas">
+            
+            <div class="advantage-card animate-on-scroll">
+                <div class="advantage-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h3>Manejo de tu Tiempo</h3>
+                <p>Recupera horas valiosas de tu día eliminando esperas innecesarias.</p>
+                <ul>
+                    <li><i class="fas fa-check"></i> Agenda 24/7 desde cualquier dispositivo</li>
+                    <li><i class="fas fa-check"></i> Recordatorios automáticos por SMS/email</li>
+                    <li><i class="fas fa-check"></i> Reagenda o cancela con un clic</li>
+                    <li><i class="fas fa-check"></i> Sin filas ni llamadas telefónicas</li>
+                </ul>
+            </div>
+
+            <div class="advantage-card animate-on-scroll">
+                <div class="advantage-icon">
+                    <i class="fas fa-user-doctor"></i>
+                </div>
+                <h3>Médico de Confianza</h3>
+                <p>Construye una relación continua con el profesional que conoce tu historia.</p>
+                <ul>
+                    <li><i class="fas fa-check"></i> Siempre con el mismo especialista</li>
+                    <li><i class="fas fa-check"></i> Seguimiento personalizado de tu caso</li>
+                    <li><i class="fas fa-check"></i> Historial completo disponible en cada consulta</li>
+                    <li><i class="fas fa-check"></i> Comunicación directa y segura</li>
+                </ul>
+            </div>
+
+            <div class="advantage-card animate-on-scroll">
+                <div class="advantage-icon">
+                    <i class="fas fa-cloud"></i>
+                </div>
+                <h3>Historial Digitalizado</h3>
+                <p>Tu información médica segura, accesible y siempre actualizada.</p>
+                <ul>
+                    <li><i class="fas fa-check"></i> Acceso desde móvil, tablet o computadora</li>
+                    <li><i class="fas fa-check"></i> Copia de seguridad automática en la nube</li>
+                    <li><i class="fas fa-check"></i> Búsqueda instantánea de diagnósticos</li>
+                    <li><i class="fas fa-check"></i> Exportación segura cuando la necesites</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- Sección: Proceso de uso -->
+        <section class="info-section">
+            <div class="section-title">
+                <i class="fas fa-list-check"></i>
+                <h2>Cómo funciona nuestro servicio</h2>
+            </div>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <div>
+                        <strong>Busca tu médico</strong>
+                        <span>Encuentra especialistas por nombre, especialidad o disponibilidad.</span>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-calendar-day"></i>
+                    <div>
+                        <strong>Elige fecha y hora</strong>
+                        <span>Selecciona el horario que mejor se adapte a tu agenda personal.</span>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-bell"></i>
+                    <div>
+                        <strong>Recibe confirmación</strong>
+                        <span>Notificación inmediata con detalles de tu cita y preparación necesaria.</span>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-file-medical"></i>
+                    <div>
+                        <strong>Accede a tu expediente</strong>
+                        <span>Consulta diagnósticos, recetas y resultados desde cualquier lugar.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección: Timeline del proceso -->
+        <section class="process-section">
+            <div class="section-title">
+                <i class="fas fa-route"></i>
+                <h2>Tu camino hacia una mejor atención</h2>
+            </div>
+            <div class="process-steps">
+                <div class="process-step">
+                    <span class="step-badge">1</span>
+                    <i class="fas fa-user-plus"></i>
+                    <h4>Regístrate</h4>
+                    <p>Crea tu cuenta segura en menos de 2 minutos.</p>
+                </div>
+                <div class="process-step">
+                    <span class="step-badge">2</span>
+                    <i class="fas fa-calendar-check"></i>
+                    <h4>Agenda tu cita</h4>
+                    <p>Selecciona médico, fecha y motivo de consulta.</p>
+                </div>
+                <div class="process-step">
+                    <span class="step-badge">3</span>
+                    <i class="fas fa-stethoscope"></i>
+                    <h4>Asiste a tu consulta</h4>
+                    <p>Tu médico tendrá todo tu historial listo para revisar.</p>
+                </div>
+                <div class="process-step">
+                    <span class="step-badge">4</span>
+                    <i class="fas fa-share-nodes"></i>
+                    <h4>Comparte si lo necesitas</h4>
+                    <p>Exporta tu resumen médico de forma segura.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección: Compartir historial -->
+        <section class="sharing-section">
+            <div class="section-title" style="justify-content: center; border: none; margin-bottom: 1rem;">
+                <i class="fas fa-share-alt"></i>
+                <h2>Comparte tu información de forma segura</h2>
+            </div>
+            <p style="color: var(--gray-600); max-width: 600px; margin: 0 auto 2rem;">
+                Cuando necesites enviar tu historial a otro especialista, familiar o institución, 
+                puedes hacerlo de manera controlada y segura:
+            </p>
+            
+            <div class="sharing-cards">
+                <div class="sharing-card email">
+                    <i class="fas fa-envelope"></i>
+                    <h4>Correo Personal</h4>
+                    <p>Recibe un PDF cifrado en tu email con enlace de descarga seguro.</p>
+                </div>
+                <div class="sharing-card whatsapp">
+                    <i class="fab fa-whatsapp"></i>
+                    <h4>WhatsApp</h4>
+                    <p>Envía un resumen básico a contactos de confianza (sin datos sensibles).</p>
+                </div>
+                <div class="sharing-card telegram">
+                    <i class="fab fa-telegram"></i>
+                    <h4>Telegram / Signal</h4>
+                    <p>Comparte mediante mensajería encriptada de extremo a extremo.</p>
+                </div>
+                <div class="sharing-card download">
+                    <i class="fas fa-download"></i>
+                    <h4>Descarga Directa</h4>
+                    <p>Guarda tu expediente en formato PDF para imprimir o archivar.</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; padding: 1rem; background: var(--warning-50); border-radius: var(--radius); color: var(--warning-600); text-align: center; max-width: 700px; margin-left: auto; margin-right: auto;">
+                <i class="fas fa-shield-halved"></i>
+                <strong>Importante:</strong> Al compartir tu información, tú decides qué datos incluir y por cuánto tiempo será accesible el enlace. Puedes revocar el acceso en cualquier momento.
+            </div>
+        </section>
+
+        <!-- Sección: Confianza y estadísticas -->
+        <section class="trust-section">
+            <div class="section-title">
+                <i class="fas fa-handshake"></i>
+                <h2>¿Por qué confiar en nuestro sistema?</h2>
+            </div>
+            <div class="trust-grid">
+                <div class="trust-item">
+                    <i class="fas fa-lock"></i>
+                    <h4>Encriptación SSL</h4>
+                    <p>Todos tus datos viajan cifrados de extremo a extremo.</p>
+                </div>
+                <div class="trust-item">
+                    <i class="fas fa-server"></i>
+                    <h4>Backup Automático</h4>
+                    <p>Copias de seguridad diarias en servidores seguros.</p>
+                </div>
+                <div class="trust-item">
+                    <i class="fas fa-user-shield"></i>
+                    <h4>Acceso Controlado</h4>
+                    <p>Solo tú y tu médico autorizado pueden ver tu expediente completo.</p>
+                </div>
+                <div class="trust-item">
+                    <i class="fas fa-certificate"></i>
+                    <h4>Cumplimiento Legal</h4>
+                    <p>Adheridos a leyes de protección de datos médicos vigentes.</p>
+                </div>
+            </div>
+
+            <div class="trust-stats">
+                <div class="stat">
+                    <span class="stat-number">99.9%</span>
+                    <span class="stat-label">Disponibilidad</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">0</span>
+                    <span class="stat-label">Brechas de seguridad</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">24/7</span>
+                    <span class="stat-label">Soporte técnico</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección: Aceptación de términos -->
+        <section class="info-section" style="background: var(--gray-50);">
+            <div class="section-title">
+                <i class="fas fa-circle-check"></i>
+                <h2>Aceptación de términos</h2>
+            </div>
+            <p style="margin-bottom: 1rem;">
+                Al utilizar nuestro sistema de citas médicas, aceptas los siguientes términos:
+            </p>
+            <ul class="info-list" style="list-style: none; padding: 0;">
+                <li style="padding: 0.5rem 0; border-bottom: 1px dashed var(--gray-200);">
+                    <i class="fas fa-check" style="color: var(--success); margin-right: 0.5rem;"></i>
+                    <span>Proporcionar información veraz y actualizada en tu perfil.</span>
+                </li>
+                <li style="padding: 0.5rem 0; border-bottom: 1px dashed var(--gray-200);">
+                    <i class="fas fa-check" style="color: var(--success); margin-right: 0.5rem;"></i>
+                    <span>Asistir puntualmente a las citas agendadas o cancelar con al menos 24h de anticipación.</span>
+                </li>
+                <li style="padding: 0.5rem 0; border-bottom: 1px dashed var(--gray-200);">
+                    <i class="fas fa-check" style="color: var(--success); margin-right: 0.5rem;"></i>
+                    <span>Utilizar la función de compartir historial de forma responsable y ética.</span>
+                </li>
+                <li style="padding: 0.5rem 0;">
+                    <i class="fas fa-check" style="color: var(--success); margin-right: 0.5rem;"></i>
+                    <span>Notificar inmediatamente cualquier acceso no autorizado a tu cuenta.</span>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Mensaje final de confianza -->
+        <div style="background: var(--primary-gradient); border-radius: var(--radius-lg); padding: 2.5rem; text-align: center; color: white; margin: 3rem 0;">
+            <i class="fas fa-heart" style="font-size: 2.5rem; margin-bottom: 1rem; display: block;"></i>
+            <h3 style="font-size: 1.8rem; margin-bottom: 1rem;">Tu bienestar es nuestra prioridad</h3>
+            <p style="max-width: 600px; margin: 0 auto; opacity: 0.95;">
+                Diseñamos esta plataforma pensando en ti: para que cuides de tu salud 
+                sin complicaciones, con la confianza de que tu información está segura 
+                y la tranquilidad de tener a tu médico siempre cerca.
+            </p>
+            <div style="margin-top: 2rem;">
+                {% if not user.is_authenticated %}
+                <a href="{% url 'login' %}" class="btn-primary" style="background: white; color: var(--primary);">
+                    <i class="fas fa-user-plus"></i> Crear mi cuenta gratuita
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Nota legal -->
+        <div style="text-align: center; padding: 1.5rem; color: var(--gray-500); font-size: 0.85rem; border-top: 1px solid var(--gray-200);">
+            <i class="fas fa-scale-balanced"></i>
+            Este documento constituye los términos legales del servicio. 
+            Para consultas legales, contáctanos a través de los canales oficiales.
+            <br>
+            <small>© {% now "Y" %} Consultorio Médico. Todos los derechos reservados.</small>
+        </div>
+
+    </div>
+
+    <!-- Footer - MATCH CON TU SITIO PRINCIPAL -->
+    <footer class="terms-footer">
+        <div class="terms-footer-content">
+            <p>
+                <i class="fas fa-shield-halved"></i>
+                &copy; {% now "Y" %} Consultorio Médico · 
+                <a href="{% url 'politica_privacidad' %}">Política de Privacidad</a> · 
+                <a href="{% url 'terminos_usos' %}">Términos y Condiciones</a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Scripts mínimos para animaciones -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animación simple de entrada al hacer scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+        
+        document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+        
+        // Efecto hover en sharing cards
+        document.querySelectorAll('.sharing-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // Solo efecto visual, la funcionalidad real iría en producción
+                this.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                    alert('ℹ️ En producción, aquí se abriría la opción para compartir tu historial de forma segura.');
+                }, 150);
+            });
+        });
+        
+        console.log('✅ Página de Términos cargada - Ventajas del servicio médico digital');
+    });
+    </script>
+
+</body>
+</html>

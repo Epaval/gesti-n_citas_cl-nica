@@ -3,42 +3,11 @@
 {% block titulo %}Dashboard{% endblock %}
 
 {% block contenido %}
-<!-- Dashboard Header 
-<div class="dashboard-header">
-    <div class="header-content">
-        <h2 class="dashboard-title">
-            <i class="fas fa-tachometer-alt"></i> 
-            Panel de Control
-        </h2>
-        <p class="welcome-message">
-            <i class="fas fa-user-circle"></i>
-            Bienvenido, <strong>{{ user.username }}</strong> · 
-            <span class="role-badge">{{ user.get_rol_display }}</span>
-        </p>
-    </div>
-</div>-->
+
 
 <!-- Stats Grid -->
 <div class="stats-grid">
-   <!--  <div class="stat-card">
-        <div class="stat-icon patients">
-            <i class="fas fa-users"></i>
-        </div>
-        <div class="stat-content">
-            <div class="stat-number">{{ total_pacientes }}</div>
-            <div class="stat-label">Pacientes</div>
-        </div>
-    </div>
-    
-    <div class="stat-card">
-        <div class="stat-icon doctors">
-            <i class="fas fa-user-md"></i>
-        </div>
-        <div class="stat-content">
-            <div class="stat-number">{{ total_doctores }}</div>
-            <div class="stat-label">Doctores</div>
-        </div>
-    </div>-->
+   
     
     <div class="stat-card">
         <div class="stat-icon today">
@@ -114,32 +83,12 @@
             <i class="fas fa-user-md"></i> Doctores
         </a>
     </div>
-    
-    <!-- Staff Stats -->
-   <!--  <div class="staff-stats">
-        <div class="stat-item">
-            <div class="stat-value admin">{{ total_admins|default:0 }}</div>
-            <div class="stat-label-small">Admins</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value chief">{{ total_jefes|default:0 }}</div>
-            <div class="stat-label-small">Jefes</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value doctor">{{ total_medicos|default:0 }}</div>
-            <div class="stat-label-small">Médicos</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value assistant">{{ total_asistentes|default:0 }}</div>
-            <div class="stat-label-small">Asistentes</div>
-        </div>
-    </div>-->
+     
 </div>
 {% endif %}
 
 
-
-<!-- Appointments Table -->
+ 
 {% if mis_citas %}
 <div class="appointments-section">
     <h3 class="section-title">

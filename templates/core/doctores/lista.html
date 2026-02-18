@@ -106,7 +106,7 @@
                 {% for doctor in doctores %}
                 <tr data-doctor-id="{{ doctor.id }}" style="border-bottom: 1px solid #eee;">
                     <td style="padding: 12px 8px; text-align: center; vertical-align: middle;">
-                        <strong>#{{ doctor.id }}</strong>
+                        <strong>{{ doctor.id }}</strong>
                     </td>
                     <td style="padding: 12px 8px; vertical-align: middle;">
                         <div style="display: flex; align-items: center; gap: 12px;">
@@ -203,62 +203,94 @@
     </div>
 
     <!-- Paginador -->
-    <div id="paginador_container">
-        {% if page_obj.has_other_pages %}
-        <div class="grid-x grid-padding-x align-center" style="margin-top: 20px;">
-            <div class="cell auto">
-                <nav aria-label="Paginación de doctores">
-                    <ul class="pagination" role="menubar">
-                        {% if page_obj.has_previous %}
-                        <li class="pagination-previous">
-                            <a
-                                href="?page=1{% if buscar %}&buscar={{ buscar }}{% endif %}{% if especialidad %}&especialidad={{ especialidad }}{% endif %}">
-                                <i class="fas fa-angle-double-left"></i>
-                            </a>
-                        </li>
-                        <li class="pagination-previous">
-                            <a
-                                href="?page={{ page_obj.previous_page_number }}{% if buscar %}&buscar={{ buscar }}{% endif %}{% if especialidad %}&especialidad={{ especialidad }}{% endif %}">
-                                <i class="fas fa-angle-left"></i>
-                            </a>
-                        </li>
-                        {% else %}
-                        <li class="pagination-previous disabled"></li>
-                        <li class="pagination-previous disabled"></li>
-                        {% endif %}
-
-                        {% for num in page_obj.paginator.page_range %}
+    <!-- Paginador - CORREGIDO -->
+<div id="paginador_container">
+    {% if page_obj.has_other_pages %}
+    <div class="grid-x grid-padding-x align-center" style="margin-top: 20px;">
+        <div class="cell auto">
+            <nav aria-label="Paginación de doctores">
+                <ul class="pagination" role="menubar">
+                    
+                    <!-- Botón Primera Página -->
+                    {% if page_obj.has_previous %}
+                    <li class="pagination-previous">
+                        <a href="?page=1{% if buscar %}&buscar={{ buscar }}{% endif %}{% if especialidad %}&especialidad={{ especialidad }}{% endif %}" 
+                           title="Primera página">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="pagination-previous disabled" title="Primera página">
+                        <i class="fas fa-angle-double-left"></i>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- Botón Página Anterior -->
+                    {% if page_obj.has_previous %}
+                    <li class="pagination-previous">
+                        <a href="?page={{ page_obj.previous_page_number }}{% if buscar %}&buscar={{ buscar }}{% endif %}{% if especialidad %}&especialidad={{ especialidad }}{% endif %}" 
+                           title="Página anterior">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="pagination-previous disabled" title="Página anterior">
+                        <i class="fas fa-angle-left"></i>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- Números de Página -->
+                    {% for num in page_obj.paginator.page_range %}
                         {% if page_obj.number == num %}
-                        <li class="current"><span>{{ num }}</span></li>
-                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <li><a
-                                href="?page={{ num }}{% if buscar %}&buscar={{ buscar }}{% endif %}{% if especialidad %}&especialidad={{ especialidad }}{% endif %}">{{
-                                num }}</a></li>
-                            {% endif %}
-                            {% endfor %}
-
-                            {% if page_obj.has_next %}
-                            <li class="pagination-next">
-                                <a
-                                    href="?page={{ page_obj.next_page_number }}{% if buscar %}&buscar={{ buscar }}{% endif %}{% if especialidad %}&especialidad={{ especialidad }}{% endif %}">
-                                    <i class="fas fa-angle-right"></i>
-                                </a>
-                            </li>
-                            <li class="pagination-next">
-                                <a
-                                    href="?page={{ page_obj.paginator.num_pages }}{% if buscar %}&buscar={{ buscar }}{% endif %}{% if especialidad %}&especialidad={{ especialidad }}{% endif %}">
-                                    <i class="fas fa-angle-double-right"></i>
-                                </a>
-                            </li>
-                            {% else %}
-                            <li class="pagination-next disabled"></li>
-                            <li class="pagination-next disabled"></li>
-                            {% endif %}
-                    </ul>
-                </nav>
-            </div>
+                        <!-- Página actual -->
+                        <li class="current">
+                            <span>{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <!-- Páginas cercanas a la actual -->
+                        <li>
+                            <a href="?page={{ num }}{% if buscar %}&buscar={{ buscar }}{% endif %}{% if especialidad %}&especialidad={{ especialidad }}{% endif %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <!-- Botón Página Siguiente -->
+                    {% if page_obj.has_next %}
+                    <li class="pagination-next">
+                        <a href="?page={{ page_obj.next_page_number }}{% if buscar %}&buscar={{ buscar }}{% endif %}{% if especialidad %}&especialidad={{ especialidad }}{% endif %}" 
+                           title="Página siguiente">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="pagination-next disabled" title="Página siguiente">
+                        <i class="fas fa-angle-right"></i>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- Botón Última Página -->
+                    {% if page_obj.has_next %}
+                    <li class="pagination-next">
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if buscar %}&buscar={{ buscar }}{% endif %}{% if especialidad %}&especialidad={{ especialidad }}{% endif %}" 
+                           title="Última página">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="pagination-next disabled" title="Última página">
+                        <i class="fas fa-angle-double-right"></i>
+                    </li>
+                    {% endif %}
+                    
+                </ul>
+            </nav>
         </div>
-        {% endif %}
     </div>
+    {% endif %}
+</div>
+    
 </div>
 
 <!-- Estilos Personalizados -->

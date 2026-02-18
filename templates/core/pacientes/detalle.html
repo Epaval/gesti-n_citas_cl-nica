@@ -1037,7 +1037,7 @@ body {
                         <tbody>
                             {% for cita in citas %}
                             <tr>
-                                <td data-label="ID"><strong>#{{ cita.id }}</strong></td>
+                                <td data-label="ID"><strong>{{ cita.id }}</strong></td>
                                 <td data-label="Fecha">{{ cita.fecha|date:"d/m/Y" }}</td>
                                 <td data-label="Hora">{{ cita.hora|time:"H:i" }}</td>
                                 <td data-label="Doctor">{{ cita.doctor.nombre }}</td>

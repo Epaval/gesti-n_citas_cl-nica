@@ -15,6 +15,23 @@ from .decorators import (
 from .forms import UsuarioForm, PacienteForm, DoctorForm, CitaForm, PerfilForm, ExpedienteForm, DiagnosticoForm, StaffUsuarioForm
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+
+def politica_privacidad(request):
+    """Vista PÚBLICA de política de privacidad  """
+    return render(request, 'core/privacidad.html', {
+        'titulo_pagina': 'Política de Privacidad',
+        'fecha_actual': timezone.now().date()
+    })
+
+def terminos_usos(request):
+    """Vista pública de terminos y usos"""
+    contexto = {
+        'fecha_actual': timezone.now().date(),
+        'titulo_pagina': 'Términos de Uso'
+    }
+    return render(request, 'core/terminos.html', contexto)
+
+
 # ==================== AUTENTICACIÓN ====================
 def login_view(request):
     if request.user.is_authenticated:
@@ -27,7 +44,7 @@ def login_view(request):
         
         if user is not None:
             login(request, user)
-            messages.success(request, f'¡Bienvenido, {user.username}!')
+            #messages.success(request, f'¡Bienvenido, {user.username}!')
             return redirect('dashboard')
         else:
             messages.error(request, 'Usuario o contraseña incorrectos')
@@ -37,7 +54,7 @@ def login_view(request):
 @login_required
 def logout_view(request):
     logout(request)
-    messages.info(request, 'Has cerrado sesión correctamente')
+    #messages.info(request, 'Has cerrado sesión correctamente')
     return redirect('login')
 
 # ==================== DASHBOARD ====================

@@ -3,23 +3,867 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso Denegado - 403</title>
+    <meta name="description" content="Acceso denegado - No tienes permisos para acceder a esta página">
+    <title>Acceso Denegado - 403 | Sistema Médico</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- CSS Libraries -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/css/foundation.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+    /* ========================================
+       VARIABLES CSS - SISTEMA DE DISEÑO
+       ======================================== */
+    :root {
+        /* Colores principales - Tema claro */
+        --primary: #4361ee;
+        --primary-dark: #3a56d4;
+        --primary-light: #4895ef;
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        
+        /* Colores de estado */
+        --danger: #ef476f;
+        --danger-dark: #d6283f;
+        --danger-light: #fef2f2;
+        --warning: #ffb703;
+        --warning-light: #fef3c7;
+        --success: #06d6a0;
+        --success-light: #a7f3d0;
+        
+        /* Escala de grises */
+        --gray-50: #f8fafc;
+        --gray-100: #f1f5f9;
+        --gray-200: #e2e8f0;
+        --gray-300: #cbd5e1;
+        --gray-400: #94a3b8;
+        --gray-500: #64748b;
+        --gray-600: #475569;
+        --gray-700: #334155;
+        --gray-800: #1e293b;
+        --gray-900: #0f172a;
+        
+        /* Sombras */
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+        --shadow-glow: 0 0 0 4px rgb(239 71 111 / 0.15), 0 0 20px rgb(239 71 111 / 0.3);
+        
+        /* Bordes y radios */
+        --border: 1px solid var(--gray-200);
+        --radius-sm: 0.375rem;
+        --radius: 0.5rem;
+        --radius-lg: 1rem;
+        --radius-xl: 1.5rem;
+        --radius-full: 9999px;
+        
+        /* Transiciones */
+        --transition-fast: 150ms ease;
+        --transition: 250ms ease;
+        --transition-slow: 400ms ease;
+        
+        /* Tipografía */
+        --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+        
+        /* Espaciado responsive */
+        --space-xs: 0.5rem;
+        --space-sm: 1rem;
+        --space-md: 1.5rem;
+        --space-lg: 2rem;
+        --space-xl: 3rem;
+    }
+
+    /* ========================================
+       MODO OSCURO AUTOMÁTICO
+       ======================================== */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --gray-50: #0f172a;
+            --gray-100: #1e293b;
+            --gray-200: #334155;
+            --gray-300: #475569;
+            --gray-400: #64748b;
+            --gray-500: #94a3b8;
+            --gray-600: #cbd5e1;
+            --gray-700: #e2e8f0;
+            --gray-800: #f1f5f9;
+            --gray-900: #ffffff;
+            --danger-light: #450a14;
+            --warning-light: #452e0a;
+            --success-light: #0a4535;
+        }
+        
+        .error-card {
+            background: rgba(30, 41, 59, 0.95);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .info-box {
+            background: var(--gray-100);
+            border-color: var(--gray-300);
+        }
+        
+        .error-footer {
+            background: var(--gray-100);
+            border-color: var(--gray-300);
+        }
+    }
+
+    /* ========================================
+       RESET Y BASE
+       ======================================== */
+    *, *::before, *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        min-height: 100vh;
+        font-family: var(--font-sans);
+        background: var(--primary-gradient);
+        background-size: 400% 400%;
+        animation: gradientShift 20s ease infinite;
+        color: var(--gray-800);
+        line-height: 1.6;
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    /* ========================================
+       ACCESIBILIDAD
+       ======================================== */
+    /* Skip link para navegación por teclado */
+    .skip-link {
+        position: absolute;
+        top: -40px;
+        left: 0;
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        z-index: 100;
+        transition: top var(--transition-fast);
+        text-decoration: none;
+        font-weight: 600;
+        border-radius: 0 0 var(--radius) 0;
+    }
+    
+    .skip-link:focus {
+        top: 0;
+        outline: 2px solid white;
+        outline-offset: 2px;
+    }
+
+    /* Focus visible para navegación por teclado */
+    :focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+    }
+
+    /* Reduced motion preference */
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+
+    /* High contrast preference */
+    @media (prefers-contrast: high) {
+        :root {
+            --shadow: none;
+            --border: 2px solid currentColor;
+        }
+        
+        .btn {
+            border-width: 2px;
+        }
+    }
+
+    /* ========================================
+       FONDO CON PARTÍCULAS
+       ======================================== */
+    .bg-particles {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .particle {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.15);
+        animation: float 15s ease-in-out infinite;
+        opacity: 0;
+    }
+
+    .particle:nth-child(1) { width: 80px; height: 80px; top: 10%; left: 10%; animation-delay: 0s; animation-duration: 18s; }
+    .particle:nth-child(2) { width: 120px; height: 120px; top: 60%; right: 15%; animation-delay: -2s; animation-duration: 22s; }
+    .particle:nth-child(3) { width: 60px; height: 60px; bottom: 20%; left: 20%; animation-delay: -4s; animation-duration: 20s; }
+    .particle:nth-child(4) { width: 100px; height: 100px; top: 30%; right: 30%; animation-delay: -1s; animation-duration: 25s; }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+        10% { opacity: 1; }
+        50% { transform: translateY(-30px) translateX(20px) scale(1.1); opacity: 0.6; }
+        90% { opacity: 1; }
+    }
+
+    /* ========================================
+       CONTENEDOR PRINCIPAL
+       ======================================== */
+    .main-container {
+        position: relative;
+        z-index: 10;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: clamp(1rem, 5vw, 2rem);
+    }
+
+    /* ========================================
+       TARJETA DE ERROR
+       ======================================== */
+    .error-card {
+        width: 100%;
+        max-width: 520px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-xl), 0 0 0 1px rgba(255, 255, 255, 0.2);
+        overflow: hidden;
+        animation: cardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transform-origin: center bottom;
+    }
+
+    @keyframes cardEntrance {
+        from {
+            opacity: 0;
+            transform: translateY(40px) scale(0.98);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .error-card:hover {
+        box-shadow: var(--shadow-xl), 0 0 0 1px rgba(255, 255, 255, 0.3);
+    }
+
+    /* Header */
+    .error-header {
+        background: linear-gradient(135deg, var(--danger), var(--danger-dark));
+        padding: clamp(2rem, 8vw, 3rem) clamp(1.5rem, 5vw, 2.5rem);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .error-header::before {
+        content: '';
+        position: absolute;
+        inset: -50%;
+        background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, transparent 60%);
+        animation: pulse 8s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 0.4; transform: scale(1); }
+        50% { opacity: 0.7; transform: scale(1.05); }
+    }
+
+    .error-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1rem;
+        background: rgba(255,255,255,0.2);
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255,255,255,0.3);
+    }
+
+    .error-icon i {
+        font-size: clamp(1.8rem, 5vw, 2.2rem);
+        color: white;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    }
+
+    .error-code {
+        font-size: clamp(3.5rem, 12vw, 5rem);
+        font-weight: 800;
+        color: white;
+        text-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        line-height: 1;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+        letter-spacing: -0.02em;
+    }
+
+    /* Body */
+    .error-body {
+        padding: clamp(1.5rem, 5vw, 2.5rem);
+        text-align: center;
+    }
+
+    .error-title {
+        font-size: clamp(1.4rem, 4vw, 1.8rem);
+        font-weight: 700;
+        color: var(--gray-800);
+        margin: 0 0 clamp(0.75rem, 2vw, 1rem);
+        line-height: 1.3;
+    }
+
+    .error-message {
+        font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+        color: var(--gray-600);
+        margin: 0 auto clamp(1.5rem, 4vw, 2rem);
+        line-height: 1.7;
+        max-width: 420px;
+    }
+
+    /* Divider */
+    .error-divider {
+        width: 80px;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, var(--danger), transparent);
+        margin: clamp(1.5rem, 4vw, 2.5rem) auto;
+        border-radius: var(--radius-full);
+    }
+
+    /* Info Box */
+    .info-box {
+        background: var(--gray-50);
+        border-radius: var(--radius-lg);
+        padding: clamp(1rem, 4vw, 1.5rem);
+        margin: 0 auto clamp(1.5rem, 4vw, 2rem);
+        border: var(--border);
+        text-align: left;
+        max-width: 420px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .info-box::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(135deg, var(--danger), var(--warning));
+    }
+
+    .info-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--gray-700);
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: clamp(0.75rem, 2vw, 1rem);
+    }
+
+    .info-title i {
+        color: var(--danger);
+        font-size: 1rem;
+    }
+
+    .info-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .info-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: clamp(0.4rem, 1.5vw, 0.5rem) 0;
+        color: var(--gray-600);
+        font-size: 0.9rem;
+        border-bottom: 1px dashed var(--gray-200);
+    }
+
+    .info-list li:last-child {
+        border-bottom: none;
+    }
+
+    .info-list li i {
+        color: var(--warning);
+        font-size: 0.85rem;
+        margin-top: 0.2rem;
+        flex-shrink: 0;
+    }
+
+    /* Buttons */
+    .button-group {
+        display: flex;
+        gap: clamp(0.75rem, 2vw, 1rem);
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: clamp(1rem, 3vw, 1.5rem);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: clamp(0.75rem, 2.5vw, 0.875rem) clamp(1.25rem, 4vw, 1.75rem);
+        border-radius: var(--radius-lg);
+        font-size: clamp(0.9rem, 2.5vw, 1rem);
+        font-weight: 600;
+        text-decoration: none;
+        transition: all var(--transition);
+        border: none;
+        cursor: pointer;
+        box-shadow: var(--shadow);
+        min-width: clamp(140px, 30vw, 160px);
+        position: relative;
+        overflow: hidden;
+        background: white;
+        color: var(--gray-700);
+        border: 1px solid var(--gray-300);
+    }
+
+    .btn::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--gray-100);
+        opacity: 0;
+        transition: opacity var(--transition);
+    }
+
+    .btn:hover::before {
+        opacity: 1;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+        color: var(--gray-800);
+    }
+
+    .btn:active {
+        transform: translateY(0);
+    }
+
+    .btn-primary {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        box-shadow: 0 12px 24px rgba(67, 97, 238, 0.3);
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, var(--danger), var(--danger-dark));
+        color: white;
+        border: none;
+    }
+
+    .btn-danger:hover {
+        box-shadow: 0 12px 24px rgba(239, 71, 111, 0.3);
+    }
+
+    .btn i {
+        font-size: 0.95rem;
+        transition: transform var(--transition-fast);
+    }
+
+    .btn:hover i {
+        transform: translateX(-3px);
+    }
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        pointer-events: none;
+    }
+
+    /* Current Time */
+    .current-time {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        background: var(--gray-100);
+        border-radius: var(--radius-full);
+    }
+
+    .current-time i {
+        color: var(--primary);
+    }
+
+    /* Footer */
+    .error-footer {
+        background: var(--gray-50);
+        padding: clamp(1rem, 4vw, 1.5rem) clamp(1.5rem, 5vw, 2rem);
+        border-top: var(--border);
+        text-align: center;
+    }
+
+    .error-footer p {
+        margin: 0;
+        color: var(--gray-500);
+        font-size: 0.85rem;
+    }
+
+    .error-footer a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color var(--transition-fast);
+    }
+
+    .error-footer a:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+    }
+
+    .error-footer .copyright {
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        opacity: 0.7;
+    }
+
+    /* Loading Spinner */
+    .loading-spinner {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .btn.loading .btn-text {
+        opacity: 0;
+    }
+
+    .btn.loading .btn-loader {
+        position: absolute;
+    }
+
+    .btn-loader {
+        display: none;
+    }
+
+    .btn.loading .btn-loader {
+        display: inline-block;
+    }
+
+    /* ========================================
+       RESPONSIVE AVANZADO
+       ======================================== */
+    @media (max-width: 640px) {
+        .button-group {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .info-list li {
+            font-size: 0.85rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .error-icon {
+            width: 64px;
+            height: 64px;
+        }
+        
+        .error-footer {
+            padding: 1rem;
+        }
+        
+        .error-footer p {
+            font-size: 0.8rem;
+        }
+    }
+
+    /* ========================================
+       UTILITIES
+       ======================================== */
+    .text-center { text-align: center; }
+    .text-muted { color: var(--gray-500); }
+    .mt-auto { margin-top: auto; }
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+    </style>
 </head>
 <body>
-    <div class="grid-container" style="margin-top: 100px;">
+    <!-- Skip link para accesibilidad -->
+    <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+
+    <!-- Partículas de fondo -->
+    <div class="bg-particles" aria-hidden="true">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <!-- Contenedor principal -->
+    <main class="main-container" id="main-content" role="main" aria-labelledby="page-title">
         <div class="grid-x grid-padding-x align-center">
-            <div class="cell medium-8 large-6">
-                <div class="callout alert">
-                    <h1><i class="fas fa-lock"></i> Acceso Denegado</h1>
-                    <p class="lead">No tienes permisos para acceder a esta página.</p>
-                    <p>Si crees que esto es un error, contacta al administrador del sistema.</p>
-                    <hr>
-                    <a href="{% url 'logout' %}" class="button secondary">← Volver Atrás</a>
-                     
-                </div>
+            <div class="cell">
+                
+                <!-- Tarjeta de error -->
+                <article class="error-card" aria-label="Página de error 403">
+                    
+                    <!-- Header con código de error -->
+                    <header class="error-header">
+                        <div class="error-icon" aria-hidden="true">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h1 class="error-code" id="page-title">403</h1>
+                    </header>
+
+                    <!-- Cuerpo de la tarjeta -->
+                    <div class="error-body">
+                        <h2 class="error-title">¡Acceso Denegado!</h2>
+                        
+                        <p class="error-message">
+                            No tienes permisos para acceder a esta página. 
+                            Si crees que esto es un error, contacta al administrador del sistema.
+                        </p>
+
+                        <!-- Información adicional -->
+                        <aside class="info-box" aria-label="Información sobre el error">
+                            <div class="info-title">
+                                <i class="fas fa-circle-info" aria-hidden="true"></i>
+                                <span>Posibles causas:</span>
+                            </div>
+                            <ul class="info-list">
+                                <li>
+                                    <i class="fas fa-circle-xmark" aria-hidden="true"></i>
+                                    <span>No has iniciado sesión</span>
+                                </li>
+                                <li>
+                                    <i class="fas fa-circle-xmark" aria-hidden="true"></i>
+                                    <span>Tu sesión ha expirado</span>
+                                </li>
+                                <li>
+                                    <i class="fas fa-circle-xmark" aria-hidden="true"></i>
+                                    <span>No tienes el rol necesario</span>
+                                </li>
+                                <li>
+                                    <i class="fas fa-circle-xmark" aria-hidden="true"></i>
+                                    <span>Intentas acceder a un recurso restringido</span>
+                                </li>
+                            </ul>
+                        </aside>
+
+                        <!-- Botones de acción -->
+                        <nav class="button-group" aria-label="Acciones disponibles">
+                            <button type="button" class="btn" id="btn-back" aria-label="Volver a la página anterior">
+                                <span class="btn-text"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver</span>
+                                <span class="btn-loader" aria-hidden="true"></span>
+                            </button>
+                           
+                        </nav>
+
+                        <div class="error-divider" aria-hidden="true"></div>
+
+                        <!-- Hora actual -->
+                        <time class="current-time" datetime="" id="current-time" aria-label="Fecha y hora actual">
+                            <i class="fas fa-clock" aria-hidden="true"></i>
+                            <span>Cargando...</span>
+                        </time>
+                    </div>
+
+                    <!-- Footer -->
+                    <footer class="error-footer">
+                        <p>
+                            <i class="fas fa-shield-halved" aria-hidden="true"></i>
+                            Sistema de Gestión Médica ·                             
+                            
+                        </p>
+                        <p class="copyright">
+                            &copy; <span id="current-year"></span> Todos los derechos reservados
+                        </p>
+                    </footer>
+                    
+                </article>
+                
             </div>
         </div>
-    </div>
+    </main>
+
+    <!-- Scripts -->
+    <script>
+    /**
+     * Página 403 - Funcionalidades mejoradas
+     * Accesibilidad, UX y micro-interacciones
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+        // ========================================
+        // ACTUALIZAR FECHA Y HORA
+        // ========================================
+        function updateDateTime() {
+            const now = new Date();
+            const timeElement = document.getElementById('current-time');
+            const yearElement = document.getElementById('current-year');
+            
+            if (timeElement) {
+                const formatted = now.toLocaleString('es-ES', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                timeElement.querySelector('span').textContent = formatted;
+                timeElement.setAttribute('datetime', now.toISOString());
+            }
+            
+            if (yearElement) {
+                yearElement.textContent = now.getFullYear();
+            }
+        }
+        
+        updateDateTime();
+        setInterval(updateDateTime, 60000); // Actualizar cada minuto
+
+        // ========================================
+        // BOTÓN VOLVER ATRÁS
+        // ========================================
+        const btnBack = document.getElementById('btn-back');
+        if (btnBack) {
+            btnBack.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Mostrar estado de carga
+                this.classList.add('loading');
+                this.disabled = true;
+                
+                // Intentar volver en el historial
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    // Fallback: ir al dashboard
+                    window.location.href = "{% url 'dashboard' %}";
+                }
+                
+                // Restaurar botón si la navegación falla
+                setTimeout(() => {
+                    this.classList.remove('loading');
+                    this.disabled = false;
+                }, 1500);
+            });
+        }
+
+        // ========================================
+        // FEEDBACK VISUAL EN BOTONES
+        // ========================================
+        document.querySelectorAll('.btn:not(#btn-back)').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Solo mostrar loading si no es navegación inmediata
+                if (this.tagName === 'BUTTON' || this.getAttribute('target') === '_blank') {
+                    this.classList.add('loading');
+                    setTimeout(() => this.classList.remove('loading'), 1000);
+                }
+            });
+        });
+
+        // ========================================
+        // ACCESIBILIDAD: FOCUS MANAGEMENT
+        // ========================================
+        // Enfocar el primer botón interactivo después de cargar
+        setTimeout(() => {
+            const firstInteractive = document.querySelector('.btn');
+            if (firstInteractive && !document.activeElement) {
+                // No enfocar automáticamente, pero preparar para teclado
+                firstInteractive.setAttribute('tabindex', '0');
+            }
+        }, 100);
+
+        // ========================================
+        // ANIMACIÓN DE ENTRADA ESCALONADA
+        // ========================================
+        const animatedElements = document.querySelectorAll('.error-title, .error-message, .info-box, .button-group');
+        animatedElements.forEach((el, index) => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(15px)';
+            el.style.transition = `opacity 0.4s ease ${index * 0.1 + 0.3}s, transform 0.4s ease ${index * 0.1 + 0.3}s`;
+            
+            // Trigger reflow
+            void el.offsetWidth;
+            
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        });
+
+        // ========================================
+        // DETECCIÓN DE CONEXIÓN LENTA
+        // ========================================
+        if ('connection' in navigator) {
+            const connection = navigator.connection;
+            if (connection.effectiveType === '2g' || connection.saveData) {
+                // Desactivar animaciones para ahorrar datos
+                document.documentElement.style.setProperty('--transition', '0ms');
+                document.querySelectorAll('.particle').forEach(p => p.style.animation = 'none');
+            }
+        }
+
+        // Logging para desarrollo
+        console.log('🔐 Error 403 page loaded - Access denied');
+    });
+    </script>
 </body>
 </html>

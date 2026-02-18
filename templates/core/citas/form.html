@@ -1274,37 +1274,37 @@ $(document).ready(function() {
         }
     });
 
-    // Si hay un paciente preseleccionado (para edición)
-    {% if form.paciente.value %}
-    console.log('Cargando paciente para edición:', {{ form.paciente.value }});
-    $.ajax({
-        url: '/api/pacientes/{{ form.paciente.value }}/',
-        method: 'GET',
-        success: function(data) {
-             
-            window.seleccionarPaciente(data.id, data.nombre, data.ci, data.telefono);
-        },
-        error: function(xhr, status, error) {
-            console.error('Error cargando datos del paciente:', error);
-        }
-    });
-    {% endif %}
+    // Preseleccionados (para edición) — obtener valores seguros como strings y verificarlos en runtime
+    var preselectedPaciente = '{{ form.paciente.value|default:""|escapejs }}';
+    var preselectedDoctor = '{{ form.doctor.value|default:""|escapejs }}';
     
-    // Si hay un doctor preseleccionado (para edición)
-    {% if form.doctor.value %}
-    console.log('Cargando doctor para edición:', {{ form.doctor.value }});
-    $.ajax({
-        url: '/api/doctores/{{ form.doctor.value }}/',
-        method: 'GET',
-        success: function(data) {
-             
-            window.seleccionarDoctor(data.id, data.nombre, data.especialidad, data.telefono);
-        },
-        error: function(xhr, status, error) {
-            console.error('Error cargando datos del doctor:', error);
-        }
-    });
-    {% endif %}
+    if (preselectedPaciente) {
+        console.log('Cargando paciente para edición:', preselectedPaciente);
+        $.ajax({
+            url: '/api/pacientes/' + encodeURIComponent(preselectedPaciente) + '/',
+            method: 'GET',
+            success: function(data) {
+                window.seleccionarPaciente(data.id, data.nombre, data.ci, data.telefono);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error cargando datos del paciente:', error);
+            }
+        });
+    }
+    
+    if (preselectedDoctor) {
+        console.log('Cargando doctor para edición:', preselectedDoctor);
+        $.ajax({
+            url: '/api/doctores/' + encodeURIComponent(preselectedDoctor) + '/',
+            method: 'GET',
+            success: function(data) {
+                window.seleccionarDoctor(data.id, data.nombre, data.especialidad, data.telefono);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error cargando datos del doctor:', error);
+            }
+        });
+    }
 });
 </script>
 {% endblock %}

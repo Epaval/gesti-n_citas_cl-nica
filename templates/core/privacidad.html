@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Política de Privacidad y Confidencialidad | Sistema de Citas Médicas</title>
+    <meta name="description" content="Política de privacidad y confidencialidad de datos médicos. Información sobre el manejo seguro de historiales clínicos, diagnósticos y resultados de exámenes.">
+    
+    <!-- Foundation CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/css/foundation.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Variables de color */
+        :root {
+            --primary-50: #eff6ff;
+            --primary-100: #dbeafe;
+            --primary-200: #bfdbfe;
+            --primary-300: #93c5fd;
+            --primary-400: #60a5fa;
+            --primary-500: #3b82f6;
+            --primary-600: #2563eb;
+            --primary-700: #1d4ed8;
+            --primary-800: #1e40af;
+            --primary-900: #1e3a8a;
+            
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            
+            --success-50: #f0fdf4;
+            --success-500: #22c55e;
+            --warning-50: #fefce8;
+            --warning-500: #eab308;
+            --danger-50: #fef2f2;
+            --danger-500: #ef4444;
+            --info-50: #f0f9ff;
+            --info-500: #0ea5e9;
+        }
+
+        /* Estilos generales */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            color: var(--gray-700);
+            line-height: 1.6;
+            background: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        .privacy-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Encabezado de la página */
+        .privacy-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--gray-900) 0%, var(--gray-800) 100%);
+            border-radius: 1rem;
+            color: white;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .privacy-header i {
+            font-size: 3rem;
+            color: var(--primary-400);
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 9999px;
+        }
+
+        .privacy-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 1rem 0 0.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        .privacy-header p {
+            font-size: 1.1rem;
+            color: var(--gray-300);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .last-updated {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--gray-400);
+        }
+
+        /* Tarjeta principal de confidencialidad */
+        .confidentiality-card {
+            background: linear-gradient(135deg, var(--primary-50) 0%, white 100%);
+            border-left: 4px solid var(--primary-600);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .confidentiality-card::before {
+            content: '🔒';
+            position: absolute;
+            right: 1rem;
+            bottom: 1rem;
+            font-size: 4rem;
+            opacity: 0.1;
+        }
+
+        .confidentiality-card h2 {
+            color: var(--primary-800);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .confidentiality-card h2 i {
+            color: var(--primary-600);
+        }
+
+        .confidentiality-card p {
+            font-size: 1.2rem;
+            color: var(--gray-700);
+            font-weight: 500;
+        }
+
+        .confidentiality-badge {
+            display: inline-block;
+            background: var(--primary-600);
+            color: white;
+            padding: 0.25rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            margin-top: 1rem;
+        }
+
+        /* Grid de derechos */
+        .rights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .right-card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .right-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-300);
+        }
+
+        .right-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-50);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .right-icon i {
+            font-size: 1.5rem;
+            color: var(--primary-600);
+        }
+
+        .right-card h3 {
+            color: var(--gray-900);
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .right-card p {
+            color: var(--gray-600);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Secciones de información */
+        .info-section {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--gray-200);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .section-title i {
+            font-size: 1.5rem;
+            color: var(--primary-600);
+            background: var(--primary-50);
+            padding: 0.5rem;
+            border-radius: 8px;
+        }
+
+        .section-title h2 {
+            font-size: 1.5rem;
+            color: var(--gray-900);
+            font-weight: 600;
+        }
+
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .info-list li {
+            padding: 0.75rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            border-bottom: 1px dashed var(--gray-200);
+        }
+
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+
+        .info-list i {
+            color: var(--primary-500);
+            font-size: 1rem;
+            margin-top: 0.2rem;
+        }
+
+        .info-list strong {
+            color: var(--gray-900);
+            font-weight: 600;
+        }
+
+        /* Proceso de acceso médico */
+        .access-process {
+            background: var(--gray-50);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .step {
+            text-align: center;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 0.75rem;
+            border: 1px solid var(--gray-200);
+            position: relative;
+        }
+
+        .step-number {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-600);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .step i {
+            font-size: 2rem;
+            color: var(--primary-600);
+            margin: 1rem 0;
+        }
+
+        .step h4 {
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+
+        .step p {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+
+        /* Mensaje de confianza */
+        .trust-message {
+            background: linear-gradient(135deg, var(--gray-900) 0%, var(--gray-800) 100%);
+            border-radius: 1rem;
+            padding: 3rem 2rem;
+            text-align: center;
+            color: white;
+            margin-top: 3rem;
+        }
+
+        .trust-message i {
+            font-size: 3rem;
+            color: var(--primary-400);
+            margin-bottom: 1rem;
+        }
+
+        .trust-message h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .trust-message p {
+            font-size: 1.1rem;
+            color: var(--gray-300);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .signature {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--gray-700);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .signature-item {
+            text-align: center;
+        }
+
+        .signature-item i {
+            font-size: 1.5rem;
+            color: var(--primary-500);
+            margin-bottom: 0.5rem;
+        }
+
+        .signature-item span {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--gray-400);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .privacy-header h1 {
+                font-size: 2rem;
+            }
+            
+            .confidentiality-card h2 {
+                font-size: 1.5rem;
+            }
+            
+            .rights-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .process-steps {
+                grid-template-columns: 1fr;
+            }
+            
+            .signature {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .privacy-container {
+                padding: 1rem;
+            }
+            
+            .privacy-header {
+                padding: 1.5rem;
+            }
+            
+            .privacy-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .confidentiality-card {
+                padding: 1.5rem;
+            }
+            
+            .info-section {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Impresión */
+        @media print {
+            .privacy-header {
+                background: none;
+                color: black;
+                box-shadow: none;
+            }
+            
+            .confidentiality-card {
+                border: 2px solid black;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Aquí iría tu header existente -->
+    
+    <div class="privacy-container">
+        
+        <!-- Encabezado -->
+        <div class="privacy-header">
+            <i class="fas fa-shield-halved"></i>
+            <h1>Política de Privacidad y Confidencialidad</h1>
+            <p>Protegiendo tu información médica con los más altos estándares de seguridad</p>
+            <div class="last-updated">
+                <i class="fas fa-calendar-alt"></i> Última actualización: {% now "d/m/Y" %}
+            </div>
+        </div>
+
+        <!-- Mensaje principal de confidencialidad -->
+        <div class="confidentiality-card">
+            <h2>
+                <i class="fas fa-lock"></i>
+                Confidencialidad Absoluta
+            </h2>
+            <p>Los datos de los pacientes, resultados de exámenes y diagnósticos son <strong>totalmente confidenciales</strong> por derecho universal. Esta información está protegida por las leyes de privacidad médica y solo puede ser revelada a través de tu médico de confianza, quien te proporcionará información certera y verificada sobre tu estado de salud.</p>
+            <div class="confidentiality-badge">
+                <i class="fas fa-check-circle"></i> DERECHO UNIVERSAL A LA PRIVACIDAD MÉDICA
+            </div>
+        </div>
+
+        <!-- Grid de derechos -->
+        <div class="rights-grid">
+            <div class="right-card">
+                <div class="right-icon">
+                    <i class="fas fa-notes-medical"></i>
+                </div>
+                <h3>Datos de Pacientes</h3>
+                <p>Tu historial médico, información personal y datos de contacto están protegidos bajo estrictas medidas de seguridad y confidencialidad.</p>
+            </div>
+
+            <div class="right-card">
+                <div class="right-icon">
+                    <i class="fas fa-flask"></i>
+                </div>
+                <h3>Resultados de Exámenes</h3>
+                <p>Los resultados de laboratorio, imágenes diagnósticas y estudios clínicos son información sensible que solo tú y tu médico pueden conocer.</p>
+            </div>
+
+            <div class="right-card">
+                <div class="right-icon">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <h3>Diagnósticos</h3>
+                <p>Tus diagnósticos médicos son información privilegiada que debe ser comunicada de manera personal y profesional por tu médico tratante.</p>
+            </div>
+        </div>
+
+        <!-- Información detallada -->
+        <div class="info-section">
+            <div class="section-title">
+                <i class="fas fa-file-medical-alt"></i>
+                <h2>Información Protegida</h2>
+            </div>
+            <ul class="info-list">
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <div><strong>Datos de identificación:</strong> Nombre completo, documento de identidad, fecha de nacimiento y datos de contacto.</div>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <div><strong>Historial clínico:</strong> Antecedentes médicos, alergias, cirugías previas y condiciones crónicas.</div>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <div><strong>Resultados de laboratorio:</strong> Análisis de sangre, orina, estudios genéticos y exámenes especializados.</div>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <div><strong>Imágenes diagnósticas:</strong> Radiografías, resonancias magnéticas, tomografías y ecografías.</div>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <div><strong>Diagnósticos:</strong> Condiciones médicas diagnosticadas y su respectivo tratamiento.</div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Proceso de acceso a información -->
+        <div class="access-process">
+            <div class="section-title" style="border-bottom-color: var(--primary-300);">
+                <i class="fas fa-user-md"></i>
+                <h2>¿Cómo obtener información sobre tu salud?</h2>
+            </div>
+            <p style="margin-bottom: 2rem; color: var(--gray-600);">La única vía autorizada para recibir información certera sobre tu estado de salud es a través de tu médico de confianza, siguiendo este proceso:</p>
+            
+            <div class="process-steps">
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <i class="fas fa-calendar-check"></i>
+                    <h4>Solicita una cita</h4>
+                    <p>Agenda una consulta con tu médico tratante a través de nuestro sistema de citas.</p>
+                </div>
+                
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <i class="fas fa-stethoscope"></i>
+                    <h4>Consulta presencial</h4>
+                    <p>Durante la consulta, tu médico revisará tu caso y te explicará personalmente los resultados.</p>
+                </div>
+                
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <i class="fas fa-file-signature"></i>
+                    <h4>Información verificada</h4>
+                    <p>Recibirás información certera, verificada y explicada profesionalmente sobre tu salud.</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; padding: 1rem; background: var(--warning-50); border-radius: 0.5rem; color: var(--warning-600); text-align: center;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Importante:</strong> No compartimos información médica por teléfono, correo electrónico o mensajes de texto para garantizar la confidencialidad.
+            </div>
+        </div>
+
+        <!-- Base legal -->
+        <div class="info-section">
+            <div class="section-title">
+                <i class="fas fa-gavel"></i>
+                <h2>Base Legal y Derechos</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                <div>
+                    <h4 style="color: var(--gray-900); margin-bottom: 0.5rem;"><i class="fas fa-globe"></i> Derecho Universal</h4>
+                    <p style="color: var(--gray-600); font-size: 0.95rem;">La confidencialidad médica es un derecho humano fundamental reconocido internacionalmente por la OMS y la UNESCO.</p>
+                </div>
+                <div>
+                    <h4 style="color: var(--gray-900); margin-bottom: 0.5rem;"><i class="fas fa-file-contract"></i> Ley de Protección de Datos</h4>
+                    <p style="color: var(--gray-600); font-size: 0.95rem;">Cumplimos con todas las regulaciones locales e internacionales sobre protección de datos médicos (HIPAA, GDPR, etc.).</p>
+                </div>
+                <div>
+                    <h4 style="color: var(--gray-900); margin-bottom: 0.5rem;"><i class="fas fa-user-check"></i> Consentimiento Informado</h4>
+                    <p style="color: var(--gray-600); font-size: 0.95rem;">Solo tú puedes autorizar el acceso a tu información médica, excepto en emergencias donde tu vida esté en riesgo.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mensaje de confianza -->
+        <div class="trust-message">
+            <i class="fas fa-hand-holding-heart"></i>
+            <h3>Tu salud es nuestro compromiso</h3>
+            <p>En Consultorio Médico, entendemos que la información de salud es uno de los datos más sensibles y personales. Por eso, garantizamos la máxima confidencialidad y seguridad en el manejo de todos tus datos médicos.</p>
+            
+            <div class="signature">
+                <div class="signature-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Protegemos tu privacidad</span>
+                </div>
+                <div class="signature-item">
+                    <i class="fas fa-user-md"></i>
+                    <span>Solo tu médico accede</span>
+                </div>
+                <div class="signature-item">
+                    <i class="fas fa-heart"></i>
+                    <span>Información verificada</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nota adicional -->
+        <div style="margin-top: 2rem; padding: 1rem; background: var(--gray-50); border-radius: 0.5rem; font-size: 0.9rem; color: var(--gray-500); text-align: center;">
+            <i class="fas fa-info-circle"></i>
+            Para más información sobre nuestras políticas de privacidad o para ejercer tus derechos sobre tus datos personales, contáctanos a través de los canales oficiales.
+        </div>
+    </div>
+
+    <!-- Aquí iría tu footer existente -->
+
+</body>
+</html>
