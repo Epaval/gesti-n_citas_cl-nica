@@ -1,0 +1,27 @@
+{% extends 'core/base.html' %}
+
+{% block titulo %}Eliminar Especialidad{% endblock %}
+
+{% block contenido %}
+<div class="grid-x grid-padding-x align-center">
+    <div class="cell medium-6">
+        <div class="callout alert">
+            <h3><i class="fas fa-exclamation-triangle"></i> ¿Eliminar Especialidad?</h3>
+            <p>¿Estás seguro de que deseas eliminar la especialidad <strong>"{{ especialidad.nombre }}"</strong>?</p>
+            <p style="color: #666; font-size: 0.9em;">Esta acción no se puede deshacer.</p>
+            
+            <form method="post" style="margin-top: 20px;">
+                {% csrf_token %}
+                <div style="display: flex; gap: 10px;">
+                    <a href="{% url 'lista_especialidades' %}" class="button secondary" style="flex: 1;">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                    <button type="submit" class="button alert" style="flex: 1;">
+                        <i class="fas fa-trash"></i> Sí, Eliminar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

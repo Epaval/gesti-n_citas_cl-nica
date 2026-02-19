@@ -1,0 +1,111 @@
+
+<form method="post" action="{% url 'agregar_especialidad_dashboard' %}" id="form-especialidad">
+    {% csrf_token %}
+    
+    <div class="grid-x grid-padding-x">
+        <!-- Nombre -->
+        <div class="cell medium-6">
+            <label>{{ form.nombre.label }}
+                {{ form.nombre }}
+                {% if form.nombre.errors %}
+                    <small class="error">{{ form.nombre.errors.0 }}</small>
+                {% endif %}
+            </label>
+        </div>
+        
+        <!-- Código Corto -->
+        <div class="cell medium-6">
+            <label>{{ form.nombre_corto.label }}
+                {{ form.nombre_corto }}
+                {% if form.nombre_corto.errors %}
+                    <small class="error">{{ form.nombre_corto.errors.0 }}</small>
+                {% endif %}
+                <small class="help-text">2-10 letras mayúsculas (ej: CARDIO)</small>
+            </label>
+        </div>
+        
+        <!-- Descripción -->
+        <div class="cell medium-12">
+            <label>{{ form.descripcion.label }}
+                {{ form.descripcion }}
+                {% if form.descripcion.errors %}
+                    <small class="error">{{ form.descripcion.errors.0 }}</small>
+                {% endif %}
+            </label>
+        </div>
+        
+        <!-- Ícono y Orden -->
+        <div class="cell medium-6">
+            <label>{{ form.icono.label }}
+                {{ form.icono }}
+                {% if form.icono.errors %}
+                    <small class="error">{{ form.icono.errors.0 }}</small>
+                {% endif %}
+                <small class="help-text">Ej: fa-heart, fa-user-md</small>
+            </label>
+        </div>
+        
+        <div class="cell medium-3">
+            <label>{{ form.orden.label }}
+                {{ form.orden }}
+                {% if form.orden.errors %}
+                    <small class="error">{{ form.orden.errors.0 }}</small>
+                {% endif %}
+            </label>
+        </div>
+        
+        <!-- Activa -->
+        <div class="cell medium-3">
+            <label style="display: flex; align-items: center; gap: 8px; margin-top: 2rem;">
+                {{ form.activa }}
+                <span>{{ form.activa.label }}</span>
+            </label>
+            {% if form.activa.errors %}
+                <small class="error">{{ form.activa.errors.0 }}</small>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Botones -->
+    <div class="grid-x grid-padding-x" style="margin-top: 1.5rem;">
+        <div class="cell">
+            <button type="button" class="button secondary" onclick="cerrarModalEspecialidad()">
+                <i class="fas fa-times"></i> Cancelar
+            </button>
+            <button type="submit" class="button primary float-right">
+                <i class="fas fa-save"></i> Guardar Especialidad
+            </button>
+        </div>
+    </div>
+</form>
+
+<!-- Estilos para el formulario -->
+<style>
+    #form-especialidad .input-group-field {
+        min-height: 2.5rem;
+    }
+    
+    #form-especialidad .error {
+        color: #c0392b;
+        font-size: 0.8em;
+        display: block;
+        margin-top: 4px;
+    }
+    
+    #form-especialidad .help-text {
+        color: #666;
+        font-size: 0.75em;
+        font-style: italic;
+        display: block;
+        margin-top: 4px;
+    }
+    
+    /* Switch para campo activa */
+    #form-especialidad .switch-input + .switch-paddle {
+        background: #ccc;
+    }
+    
+    #form-especialidad .switch-input:checked + .switch-paddle {
+        background: #27ae60;
+    }
+</style>

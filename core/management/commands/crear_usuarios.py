@@ -1,6 +1,7 @@
 # core/management/commands/crear_usuarios.py
+
 from django.core.management.base import BaseCommand
-from core.models import Usuario, Doctor
+from core.models import Usuario, Doctor, Especialidad
 from datetime import date, timedelta
 import random
 
@@ -56,6 +57,19 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR('❌ Operación cancelada'))
             return
         
+        # ✅ VERIFICAR QUE HAY ESPECIALIDADES EN LA BD
+        especialidades = list(Especialidad.objects.filter(activa=True))
+        if not especialidades:
+            self.stdout.write(self.style.ERROR('\n❌ No hay especialidades en la base de datos'))
+            self.stdout.write(self.style.WARNING('   Primero crea especialidades o ejecuta:'))
+            self.stdout.write(self.style.WARNING('   python3 manage.py shell\n'))
+            self.stdout.write(self.style.WARNING('   >>> from core.models import Especialidad'))
+            self.stdout.write(self.style.WARNING('   >>> Especialidad.objects.create(nombre="Medicina General", nombre_corto="GENERAL")'))
+            self.stdout.write(self.style.WARNING('   >>> exit()\n'))
+            return
+        
+        self.stdout.write(self.style.SUCCESS(f'✅ Especialidades disponibles: {len(especialidades)}'))
+        
         # Datos de prueba para Venezuela
         nombres_masculinos = [
             'Carlos', 'José', 'Luis', 'Miguel', 'Antonio', 'Manuel', 'Pedro',
@@ -79,8 +93,6 @@ class Command(BaseCommand):
             'Silva', 'Contreras', 'Medina', 'Aguilar', 'Cortez', 'León', 'Reyes'
         ]
         
-        ESPECIALIDADES = Doctor.ESPECIALIDADES
-        
         usuarios_creados = {
             'ADMIN': [],
             'JEFE': [],
@@ -99,7 +111,6 @@ class Command(BaseCommand):
             apellido = random.choice(apellidos)
             email = f'{username}@consultorio.com'
             
-            # Verificar si ya existe
             if Usuario.objects.filter(username=username).exists():
                 self.stdout.write(self.style.WARNING(f'   ⚠️  {username} ya existe, saltando...'))
                 continue
@@ -144,11 +155,11 @@ class Command(BaseCommand):
                 telefono=f'0414-{random.randint(1000000, 9999999)}'
             )
             
-            # Crear perfil de doctor para el jefe
-            especialidad = random.choice(ESPECIALIDADES)
+            # ✅ Crear perfil de doctor con especialidad dinámica
+            especialidad = random.choice(especialidades)
             doctor = Doctor.objects.create(
                 nombre=f'Dr(a). {nombre} {apellido}',
-                especialidad=especialidad[0],
+                especialidad=especialidad,  # ✅ Ahora es ForeignKey
                 telefono=f'0212-{random.randint(1000000, 9999999)}',
                 costo_consulta=random.choice([500, 600, 700, 800, 900, 1000]),
                 usuario=usuario,
@@ -157,7 +168,7 @@ class Command(BaseCommand):
             
             usuarios_creados['JEFE'].append(usuario)
             self.stdout.write(
-                self.style.SUCCESS(f'   ✓ [{i:2d}] {username:15s} | {nombre} {apellido:20s} | {especialidad[1]}')
+                self.style.SUCCESS(f'   ✓ [{i:2d}] {username:15s} | {nombre} {apellido:20s} | {especialidad.nombre}')
             )
         
         # ==================== MÉDICOS ====================
@@ -165,8 +176,6 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('🩺 CREANDO MÉDICOS'))
         self.stdout.write(self.style.SUCCESS('='*70))
         
-        # Distribuir especialidades
-        especialidades_asignadas = []
         for i in range(1, kwargs['medicos'] + 1):
             username = f'medico{i:02d}'
             nombre = random.choice(nombres_masculinos + nombres_femeninos)
@@ -177,9 +186,8 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f'   ⚠️  {username} ya existe, saltando...'))
                 continue
             
-            # Asignar especialidad rotativa para tener variedad
-            especialidad = ESPECIALIDADES[i % len(ESPECIALIDADES)]
-            especialidades_asignadas.append(especialidad[1])
+            # ✅ Asignar especialidad rotativa de la lista dinámica
+            especialidad = especialidades[i % len(especialidades)]
             
             usuario = Usuario.objects.create_user(
                 username=username,
@@ -191,10 +199,10 @@ class Command(BaseCommand):
                 telefono=f'0416-{random.randint(1000000, 9999999)}'
             )
             
-            # Crear perfil de doctor
+            # ✅ Crear perfil de doctor con especialidad dinámica
             doctor = Doctor.objects.create(
                 nombre=f'Dr(a). {nombre} {apellido}',
-                especialidad=especialidad[0],
+                especialidad=especialidad,  # ✅ Ahora es ForeignKey
                 telefono=f'0241-{random.randint(1000000, 9999999)}',
                 costo_consulta=random.choice([400, 500, 600, 700, 800]),
                 usuario=usuario,
@@ -203,7 +211,7 @@ class Command(BaseCommand):
             
             usuarios_creados['MEDICO'].append(usuario)
             self.stdout.write(
-                self.style.SUCCESS(f'   ✓ [{i:2d}] {username:15s} | {nombre} {apellido:20s} | {especialidad[1]}')
+                self.style.SUCCESS(f'   ✓ [{i:2d}] {username:15s} | {nombre} {apellido:20s} | {especialidad.nombre}')
             )
         
         # ==================== ASISTENTES ====================
@@ -213,7 +221,7 @@ class Command(BaseCommand):
         
         for i in range(1, kwargs['asistentes'] + 1):
             username = f'asistente{i:02d}'
-            nombre = random.choice(nombres_femeninos)  # Mayoría femeninos para asistentes
+            nombre = random.choice(nombres_femeninos)
             apellido = random.choice(apellidos)
             email = f'{username}@consultorio.com'
             
@@ -250,37 +258,31 @@ class Command(BaseCommand):
         
         self.stdout.write(self.style.SUCCESS(f'\n🔐 CREDENCIALES DE ACCESO:'))
         self.stdout.write(self.style.WARNING(f'   Contraseña: {password}'))
-        self.stdout.write(self.style.SUCCESS(f'\n📋 USUARIOS CREADOS:'))
         
-        # Tabla de credenciales
+        self.stdout.write(self.style.SUCCESS(f'\n📋 PRIMEROS USUARIOS DE CADA ROL:'))
         self.stdout.write('\n   ' + '-'*60)
         self.stdout.write('   {:<20} {:<15} {:<15}'.format('USERNAME', 'ROL', 'CONTRASEÑA'))
         self.stdout.write('   ' + '-'*60)
         
         for rol, usuarios in usuarios_creados.items():
-            for usuario in usuarios[:5]:  # Mostrar primeros 5 de cada rol
+            for usuario in usuarios[:3]:  # Mostrar primeros 3 de cada rol
                 self.stdout.write('   {:<20} {:<15} {:<15}'.format(
                     usuario.username, 
                     usuario.get_rol_display(), 
                     password
                 ))
         
-        if any(len(v) > 5 for v in usuarios_creados.values()):
+        if any(len(v) > 3 for v in usuarios_creados.values()):
             self.stdout.write('   ... (más usuarios creados, ver lista completa en admin)')
         
         self.stdout.write('   ' + '-'*60 + '\n')
         
         # Estadísticas de doctores por especialidad
-        self.stdout.write(self.style.SUCCESS(f'\n📊 DISTRIBUCIÓN DE ESPECIALIDADES:'))
-        from django.db.models import Count
-        especialidades_count = Doctor.objects.values('especialidad').annotate(
-            total=Count('id')
-        ).order_by('-total')
+        self.stdout.write(self.style.SUCCESS(f'\n📊 DISTRIBUCIÓN DE DOCTORES POR ESPECIALIDAD:'))
+        for esp in Especialidad.objects.all():
+            num_doctores = esp.doctores.count()
+            if num_doctores > 0:
+                self.stdout.write(f'   {esp.nombre:25s}: {num_doctores} doctores')
         
-        for esp in especialidades_count:
-            especialidad_nombre = dict(ESPECIALIDADES).get(esp['especialidad'], esp['especialidad'])
-            self.stdout.write(f'   {especialidad_nombre:25s}: {esp["total"]} doctores')
-        
-        self.stdout.write(self.style.SUCCESS('\n' + '='*70))
-        self.stdout.write(self.style.SUCCESS('🌐 URL DE ACCESO: http://127.0.0.1:8000/'))
+        self.stdout.write(self.style.SUCCESS(f'\n🌐 URL DE ACCESO: http://127.0.0.1:8000/'))
         self.stdout.write(self.style.SUCCESS('='*70 + '\n'))

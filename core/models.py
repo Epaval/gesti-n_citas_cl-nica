@@ -36,7 +36,6 @@ class Usuario(AbstractUser):
         return self.rol in ['ADMIN', 'JEFE', 'MEDICO', 'ASISTENTE']
 
 # ==================== MODELO PACIENTE ====================
-# core/models.py - Modelo Paciente ACTUALIZADO
 
 class Paciente(models.Model):
     """
@@ -128,29 +127,83 @@ class Paciente(models.Model):
         if edad is None:
             return "N/A"
         return f"{edad} año(s)"
+    
+# ==================== MODELO ESPECAILIDAD ====================
+
+class Especialidad(models.Model):
+    """
+    Modelo para especialidades médicas dinámicas.
+    Permite a los administradores agregar/editar especialidades sin modificar el código.
+    """
+    nombre = models.CharField(max_length=100, unique=True)
+    nombre_corto = models.CharField(max_length=50, unique=True, help_text="Ej: CARDIO, PEDIA, DERMA")
+    descripcion = models.TextField(blank=True, help_text="Descripción opcional de la especialidad")
+    activa = models.BooleanField(default=True, help_text="Si está desactivada, no aparecerá en formularios")
+    icono = models.CharField(max_length=50, default='fa-user-md', help_text="Clase de Font Awesome (ej: fa-heart)")
+    orden = models.PositiveIntegerField(default=0, help_text="Orden de aparición en listados")
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Especialidad'
+        verbose_name_plural = 'Especialidades'
+        ordering = ['orden', 'nombre']
+    
+    def __str__(self):
+        return f"{self.nombre} ({self.nombre_corto})"
+    
+    def clean(self):
+        """Validar que el nombre_corto sea en mayúsculas"""
+        self.nombre_corto = self.nombre_corto.upper()    
    
 
 # ==================== MODELO DOCTOR ====================
+ 
+
 class Doctor(models.Model):
-    ESPECIALIDADES = (
-        ('CARDIOLOGIA', 'Cardiología'),
-        ('PEDIATRIA', 'Pediatría'),
-        ('DERMATOLOGIA', 'Dermatología'),
-        ('GENERAL', 'Medicina General'),
+    """
+    Modelo para doctores del consultorio.
+    La especialidad ahora es dinámica (ForeignKey a Especialidad).
+    """
+    usuario = models.OneToOneField(
+        Usuario, 
+        on_delete=models.CASCADE, 
+        related_name='perfil_medico', 
+        null=True, 
+        blank=True
+    )
+    nombre = models.CharField(max_length=150, verbose_name="Nombre Completo")
+    
+    
+    especialidad = models.ForeignKey(
+        Especialidad, 
+        on_delete=models.PROTECT,  
+        related_name='doctores',
+        verbose_name="Especialidad"
     )
     
-    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='perfil_medico', null=True, blank=True)
-    nombre = models.CharField(max_length=100)
-    especialidad = models.CharField(max_length=50, choices=ESPECIALIDADES)
     telefono = models.CharField(max_length=20)
+    telefono_alternativo = models.CharField(max_length=20, blank=True)
+    email = models.EmailField(blank=True)
     costo_consulta = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     activo = models.BooleanField(default=True)
-
+    fecha_registro = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    
     class Meta:
+        verbose_name = 'Doctor'
+        verbose_name_plural = 'Doctores'
         ordering = ['nombre']
-
+        indexes = [
+            models.Index(fields=['activo']),
+            models.Index(fields=['especialidad']),
+        ]
+    
     def __str__(self):
-        return f"Dr(a). {self.nombre} - {self.especialidad}"
+        return f"Dr(a). {self.nombre} - {self.especialidad.nombre if self.especialidad else 'Sin especialidad'}"
+    
+    @property
+    def get_especialidad_display(self):
+        """Método compatible con el código existente"""
+        return self.especialidad.nombre if self.especialidad else 'Sin especialidad'
 
 # ==================== MODELO CITA ====================
 class Cita(models.Model):

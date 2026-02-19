@@ -6,13 +6,13 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Q, Count
 from django.utils import timezone
-from .models import Usuario, Paciente, Doctor, Cita, Expediente, Diagnostico
+from .models import Usuario, Paciente, Doctor, Cita, Expediente, Diagnostico, Especialidad
 from .decorators import (
     rol_requerido, admin_required, jefe_required, medico_required, asistente_required,
     medico_o_jefe_required, jefe_medico_required, puede_ver_expediente_paciente
 )
 
-from .forms import UsuarioForm, PacienteForm, DoctorForm, CitaForm, PerfilForm, ExpedienteForm, DiagnosticoForm, StaffUsuarioForm
+from .forms import UsuarioForm, PacienteForm, DoctorForm, CitaForm, PerfilForm, ExpedienteForm, DiagnosticoForm, StaffUsuarioForm, EspecialidadForm
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
@@ -251,98 +251,108 @@ def api_buscar_pacientes(request):
     })
 
 # ==================== LISTA DE DOCTORES ====================
+
 @login_required
 @jefe_required
 def lista_doctores(request):
     """Vista para listar doctores con búsqueda dinámica y paginación"""
+    
     buscar = request.GET.get('buscar', '')
     especialidad = request.GET.get('especialidad', '')
     
-    doctores_list = Doctor.objects.filter(activo=True).annotate(
-        citas_programadas=Count('citas', filter=Q(citas__estado='PROGRAMADA')),
-        total_citas=Count('citas')
-    )
+    # Iniciar queryset con select_related para optimizar
+    doctores = Doctor.objects.select_related('especialidad').filter(activo=True)
     
-    # Aplicar filtros
+    # Filtrar por búsqueda de texto
     if buscar:
-        doctores_list = doctores_list.filter(
+        doctores = doctores.filter(
             Q(nombre__icontains=buscar) |
-            Q(telefono__icontains=buscar) |
-            Q(especialidad__icontains=buscar)
+            Q(especialidad__nombre__icontains=buscar) |
+            Q(especialidad__nombre_corto__icontains=buscar) |
+            Q(telefono__icontains=buscar)
         )
     
+    # Filtrar por especialidad específica
     if especialidad:
-        doctores_list = doctores_list.filter(especialidad=especialidad)
+        doctores = doctores.filter(especialidad__nombre_corto=especialidad)
     
-    doctores_list = doctores_list.order_by('nombre')
-    
-    # Paginación: 6 doctores por página
-    paginator = Paginator(doctores_list, 6)
+    # Paginación
+    paginator = Paginator(doctores, 6)  # 6 doctores por página
     page_number = request.GET.get('page')
     
     try:
-        doctores = paginator.page(page_number)
+        doctores_page = paginator.page(page_number)
     except PageNotAnInteger:
-        doctores = paginator.page(1)
+        doctores_page = paginator.page(1)
     except EmptyPage:
-        doctores = paginator.page(paginator.num_pages)
+        doctores_page = paginator.page(paginator.num_pages)
+    
+    # ✅ CORREGIDO: Obtener especialidades dinámicas para el filtro
+    especialidades = Especialidad.objects.filter(activa=True).order_by('orden', 'nombre').values_list('nombre_corto', 'nombre')
     
     contexto = {
-        'doctores': doctores,
+        'doctores': doctores_page,
+        'page_obj': doctores_page,
         'buscar': buscar,
         'especialidad': especialidad,
-        'page_obj': doctores,
+        'especialidades': especialidades,  # ✅ QuerySet de tuplas (codigo, nombre)
         'total_doctores': paginator.count,
-        'total_paginas': paginator.num_pages,
-        'especialidades': Doctor.ESPECIALIDADES,
     }
     
     return render(request, 'core/doctores/lista.html', contexto)
 
+
 # ==================== API BÚSQUEDA DINÁMICA DOCTORES ====================
+
 @login_required
 def api_buscar_doctores(request):
-    """API endpoint para búsqueda dinámica de doctores"""
-    buscar = request.GET.get('q', '')
-    especialidad = request.GET.get('especialidad', '')
+    """API para búsqueda dinámica de doctores (AJAX)"""
     
-    doctores_list = Doctor.objects.filter(activo=True)
+    query = request.GET.get('q', '')
+    especialidad_id = request.GET.get('especialidad', '')
     
-    if buscar:
-        doctores_list = doctores_list.filter(
-            Q(nombre__icontains=buscar) |
-            Q(telefono__icontains=buscar) |
-            Q(especialidad__icontains=buscar)
+    # Iniciar queryset con select_related para optimizar
+    doctores = Doctor.objects.select_related('especialidad').filter(activo=True)
+    
+    # Filtrar por búsqueda de texto
+    if query:
+        doctores = doctores.filter(
+            Q(nombre__icontains=query) |
+            Q(especialidad__nombre__icontains=query) |
+            Q(especialidad__nombre_corto__icontains=query) |
+            Q(telefono__icontains=query) |
+            Q(telefono_alternativo__icontains=query) |
+            Q(email__icontains=query)
         )
     
-    if especialidad:
-        doctores_list = doctores_list.filter(especialidad=especialidad)
+    # Filtrar por especialidad específica
+    if especialidad_id:
+        doctores = doctores.filter(especialidad_id=especialidad_id)
     
-    doctores_list = doctores_list.order_by('nombre')[:50]
+    # Limitar resultados para performance
+    doctores = doctores[:50]
     
-    doctores_data = []
-    for doctor in doctores_list:
-        doctores_data.append({
+    # Construir respuesta JSON con strings (no objetos)
+    resultados = []
+    for doctor in doctores:
+        resultados.append({
             'id': doctor.id,
             'nombre': doctor.nombre,
-            'especialidad': doctor.get_especialidad_display(),
-            'especialidad_code': doctor.especialidad,
+            'especialidad': doctor.especialidad.nombre if doctor.especialidad else 'Sin especialidad',
             'telefono': doctor.telefono,
-            'costo_consulta': float(doctor.costo_consulta),
+            'costo_consulta': str(doctor.costo_consulta),
             'activo': doctor.activo,
-            'inicial': doctor.nombre.split()[0][:1].upper() if doctor.nombre else '?',
             'url_detalle': f"/doctores/{doctor.id}/",
             'url_editar': f"/doctores/{doctor.id}/editar/",
-            'total_citas': doctor.citas.count(),
+            'inicial': doctor.nombre[0].upper() if doctor.nombre else '?',
         })
     
     return JsonResponse({
         'success': True,
-        'total': len(doctores_data),
-        'doctores': doctores_data,
-        'buscar': buscar,
+        'doctores': resultados,
+        'total': len(resultados),
+        'query': query
     })
-
 # ==================== DETALLE DE DOCTOR ====================
 @login_required
 def detalle_doctor(request, id):
@@ -973,18 +983,20 @@ def calendario_citas(request):
     return render(request, 'core/calendario/calendario.html', contexto)
 
 
+# ================ API PARA PROPORCIONAR DATOS DE CITAS AL CALENDARIO ================
+
 @login_required
 def api_calendario_citas(request):
     """API endpoint para proporcionar datos de citas al calendario"""
     
     # Obtener parámetros de filtro
     doctor_id = request.GET.get('doctor_id')
-    fecha_inicio = request.GET.get('start')  # Formato: YYYY-MM-DD
-    fecha_fin = request.GET.get('end')  # Formato: YYYY-MM-DD
+    fecha_inicio = request.GET.get('start')
+    fecha_fin = request.GET.get('end')
     estado = request.GET.get('estado')
     
     # Filtrar citas
-    citas = Cita.objects.select_related('paciente', 'doctor').all()
+    citas = Cita.objects.select_related('paciente', 'doctor', 'doctor__especialidad').all()
     
     # Filtrar por doctor
     if doctor_id:
@@ -1005,12 +1017,15 @@ def api_calendario_citas(request):
     for cita in citas:
         # Determinar color según estado
         colores = {
-            'PROGRAMADA': '#3498db',      # Azul
-            'EN_ESPERA': '#f39c12',        # Naranja
-            'COMPLETADA': '#27ae60',       # Verde
-            'CANCELADA': '#e74c3c',        # Rojo
+            'PROGRAMADA': '#3498db',
+            'EN_ESPERA': '#f39c12',
+            'COMPLETADA': '#27ae60',
+            'CANCELADA': '#e74c3c',
         }
         color = colores.get(cita.estado, '#95a5a6')
+        
+        # ✅ CORREGIDO: Acceder a especialidad correctamente
+        especialidad_nombre = cita.doctor.especialidad.nombre if cita.doctor.especialidad else 'Sin especialidad'
         
         # Crear evento
         evento = {
@@ -1031,7 +1046,7 @@ def api_calendario_citas(request):
                 'doctor': {
                     'id': cita.doctor.id,
                     'nombre': cita.doctor.nombre,
-                    'especialidad': cita.doctor.get_especialidad_display(),
+                    'especialidad': especialidad_nombre,  # ✅ Correcto
                 },
                 'motivo': cita.motivo,
                 'estado': cita.get_estado_display(),
@@ -1043,6 +1058,8 @@ def api_calendario_citas(request):
         eventos.append(evento)
     
     return JsonResponse({'events': eventos})
+
+
 
 
 @login_required
@@ -1264,10 +1281,210 @@ def api_obtener_doctor(request, doctor_id):
         data = {
             'id': doctor.id,
             'nombre': doctor.nombre,
-            'especialidad_display': doctor.get_especialidad_display(),
+            'especialidad_display': doctor.get_especialidad_display,
             'telefono': doctor.telefono,
             'costo_consulta': float(doctor.costo_consulta),
         }
         return JsonResponse(data)
     except Doctor.DoesNotExist:
         return JsonResponse({'error': 'Doctor no encontrado'}, status=404)
+    
+ 
+# ==================== GESTIÓN DE ESPECIALIDADES ====================
+
+@login_required
+@jefe_required
+def lista_especialidades(request):
+    """Vista para listar todas las especialidades médicas"""
+    buscar = request.GET.get('buscar', '')
+    estado = request.GET.get('estado', '')
+    
+    especialidades = Especialidad.objects.all()
+    
+    # Filtrar por búsqueda
+    if buscar:
+        especialidades = especialidades.filter(
+            Q(nombre__icontains=buscar) |
+            Q(nombre_corto__icontains=buscar) |
+            Q(descripcion__icontains=buscar)
+        )
+    
+    # Filtrar por estado
+    if estado == 'activas':
+        especialidades = especialidades.filter(activa=True)
+    elif estado == 'inactivas':
+        especialidades = especialidades.filter(activa=False)
+    
+    # Contar doctores por especialidad
+    from django.db.models import Count
+    especialidades = especialidades.annotate(num_doctores=Count('doctores'))
+    
+    especialidades = especialidades.order_by('orden', 'nombre')
+    
+    contexto = {
+        'especialidades': especialidades,
+        'buscar': buscar,
+        'estado': estado,
+        'total_especialidades': especialidades.count(),
+        'total_activas': Especialidad.objects.filter(activa=True).count(),
+    }
+    
+    return render(request, 'core/especialidades/lista.html', contexto)
+
+
+@login_required
+@jefe_required
+def crear_especialidad(request):
+    """Vista para crear nueva especialidad médica"""
+    if request.method == 'POST':
+        form = EspecialidadForm(request.POST)
+        if form.is_valid():
+            especialidad = form.save()
+            messages.success(request, f'Especialidad "{especialidad.nombre}" creada exitosamente')
+            return redirect('lista_especialidades')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
+    else:
+        form = EspecialidadForm()
+    
+    return render(request, 'core/especialidades/form.html', {
+        'form': form,
+        'titulo': 'Nueva Especialidad',
+        'accion': 'crear'
+    })
+
+
+@login_required
+@jefe_required
+def editar_especialidad(request, especialidad_id):
+    """Vista para editar especialidad médica"""
+    especialidad = get_object_or_404(Especialidad, id=especialidad_id)
+    
+    if request.method == 'POST':
+        form = EspecialidadForm(request.POST, instance=especialidad)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Especialidad "{especialidad.nombre}" actualizada exitosamente')
+            return redirect('lista_especialidades')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
+    else:
+        form = EspecialidadForm(instance=especialidad)
+    
+    return render(request, 'core/especialidades/form.html', {
+        'form': form,
+        'titulo': f'Editar: {especialidad.nombre}',
+        'accion': 'editar',
+        'especialidad': especialidad.nombre if especialidad else 'Sin especialidad',
+    })
+
+
+@login_required
+@jefe_required
+def activar_especialidad(request, especialidad_id):
+    """Vista para activar/desactivar especialidad"""
+    especialidad = get_object_or_404(Especialidad, id=especialidad_id)
+    
+    # Verificar si hay doctores asignados
+    num_doctores = especialidad.doctores.count()
+    
+    if num_doctores > 0 and not especialidad.activa:
+        messages.warning(request, f'No se puede activar: hay {num_doctores} doctores con esta especialidad. Actívalos primero o cámbiales la especialidad.')
+        return redirect('lista_especialidades')
+    
+    especialidad.activa = not especialidad.activa
+    especialidad.save()
+    
+    estado = 'activada' if especialidad.activa else 'desactivada'
+    messages.info(request, f'Especialidad "{especialidad.nombre}" ha sido {estado}')
+    
+    return redirect('lista_especialidades')
+
+
+@login_required
+@jefe_required
+def eliminar_especialidad(request, especialidad_id):
+    """Vista para eliminar especialidad (solo si no tiene doctores)"""
+    especialidad = get_object_or_404(Especialidad, id=especialidad_id)
+    
+    # Verificar si hay doctores asignados
+    num_doctores = especialidad.doctores.count()
+    
+    if num_doctores > 0:
+        messages.error(request, f'No se puede eliminar: hay {num_doctores} doctores con esta especialidad. Asigna otra especialidad a los doctores primero.')
+        return redirect('lista_especialidades')
+    
+    if request.method == 'POST':
+        nombre = especialidad.nombre
+        especialidad.delete()
+        messages.success(request, f'Especialidad "{nombre}" eliminada exitosamente')
+        return redirect('lista_especialidades')
+    
+    return render(request, 'core/especialidades/confirmar_eliminar.html', {
+        'especialidad': especialidad.nombre if especialidad else 'Sin especialidad',
+    })
+
+
+# ================ VISTA PARA AGREGAR ESPECIALIDAD DESDE EL DASHBOARD (MODAL/INLINE) ================
+
+@login_required
+@jefe_required  # ✅ Solo JEFE y ADMIN pueden acceder
+def agregar_especialidad_dashboard(request):
+    """Vista modal/inline para agregar especialidad desde el dashboard"""
+    
+    if request.method == 'POST':
+        form = EspecialidadForm(request.POST)
+        if form.is_valid():
+            especialidad = form.save()
+            
+            # Si es AJAX, retornar JSON
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': f'Especialidad "{especialidad.nombre}" creada exitosamente',
+                    'especialidad': {
+                        'id': especialidad.id,
+                        'nombre': especialidad.nombre,
+                        'nombre_corto': especialidad.nombre_corto,
+                        'icono': especialidad.icono,
+                    }
+                })
+            
+            messages.success(request, f'Especialidad "{especialidad.nombre}" creada exitosamente')
+            return redirect('dashboard')
+        else:
+            # Si es AJAX con errores
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'errors': form.errors
+                }, status=400)
+            
+            # Mostrar errores en formulario normal
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
+    else:
+        form = EspecialidadForm()
+    
+    # Si es AJAX, retornar el formulario renderizado
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'core/dashboard/_form_especialidad.html', {
+            'form': form,
+            'accion': 'crear'
+        })
+    
+    # Si no es AJAX, redirigir a la página completa de especialidades
+    return redirect('lista_especialidades')
+
+
+
+
+
+
+
+

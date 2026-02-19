@@ -6,8 +6,7 @@
 
 
 <!-- Stats Grid -->
-<div class="stats-grid">
-   
+<div class="stats-grid"> 
     
     <div class="stat-card">
         <div class="stat-icon today">
@@ -82,13 +81,20 @@
         <a href="{% url 'lista_doctores' %}" class="btn btn-secondary">
             <i class="fas fa-user-md"></i> Doctores
         </a>
-    </div>
-     
+    </div>     
 </div>
-{% endif %}
 
+<div class="callout" style="background: linear-gradient(135deg, var(--primary-light) 0%, white 100%); border-left: 4px solid var(--primary); margin-bottom: 20px;">
+    <div class="grid-x grid-padding-x align-center">
+        <div class="cell medium-auto">           </button>
+            <a href="{% url 'lista_especialidades' %}" class="button secondary" style="border-radius: 25px; margin-left: 5px;">
+                <i class="fas fa-list"></i> Ver Especialidades
+            </a>
+        </div>
+    </div>
+</div>
 
- 
+{% endif %} 
 {% if mis_citas %}
 <div class="appointments-section">
     <h3 class="section-title">
@@ -684,4 +690,220 @@
     }
 }
 </style>
+
+{% endblock %}
+
+{% block extra_js %}
+ 
+<script>
+
+
+function abrirModalEspecialidad() {
+    // Crear modal dinámicamente si no existe
+    let modal = document.getElementById('modal-especialidad');
+    
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'modal-especialidad';
+        modal.className = 'modal-overlay';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        `;
+        
+        modal.innerHTML = `
+            <div class="modal-card" style="
+                background: white;
+                border-radius: 1rem;
+                padding: 1.5rem;
+                max-width: 600px;
+                width: 90%;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+                animation: slideUp 0.3s ease;
+            ">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;">
+                    <h3 style="margin: 0; color: var(--primary-dark);">
+                        <i class="fas fa-plus-circle"></i> Nueva Especialidad
+                    </h3>
+                    <button type="button" onclick="cerrarModalEspecialidad()" 
+                            style="background: none; border: none; font-size: 1.5rem; color: #666; cursor: pointer;">
+                        &times;
+                    </button>
+                </div>
+                <div id="modal-especialidad-content">
+                    <p style="text-align: center; color: #666;">Cargando formulario...</p>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Agregar animaciones CSS si no existen
+        if (!document.querySelector('#modal-animations')) {
+            const style = document.createElement('style');
+            style.id = 'modal-animations';
+            style.textContent = `
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+    
+    // Cargar formulario via AJAX
+    const contentDiv = document.getElementById('modal-especialidad-content');
+    contentDiv.innerHTML = '<p style="text-align: center; color: #666;"><i class="fas fa-spinner fa-spin"></i> Cargando...</p>';
+    modal.style.display = 'flex';
+    
+    fetch('{% url "agregar_especialidad_dashboard" %}', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.text())
+    .then(html => {
+        contentDiv.innerHTML = html;
+        
+        // Inicializar Foundation switches si existen
+        if (typeof Foundation !== 'undefined') {
+            Foundation.reInit('switch');
+        }
+    })
+    .catch(error => {
+        console.error('Error cargando formulario:', error);
+        contentDiv.innerHTML = '<p style="color: #c0392b; text-align: center;">Error cargando el formulario. Intenta de nuevo.</p>';
+    });
+    
+    // Prevenir scroll del body
+    document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Cerrar modal de especialidad
+ */
+function cerrarModalEspecialidad() {
+    const modal = document.getElementById('modal-especialidad');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+/**
+ * Cerrar modal al hacer click fuera
+ */
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('modal-especialidad');
+    if (modal && e.target === modal) {
+        cerrarModalEspecialidad();
+    }
+});
+
+/**
+ * Cerrar modal con tecla Escape
+ */
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        cerrarModalEspecialidad();
+    }
+});
+
+/**
+ * Manejar envío del formulario via AJAX
+ */
+document.addEventListener('submit', function(e) {
+    const form = e.target;
+    if (form && form.id === 'form-especialidad') {
+        e.preventDefault();
+        
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        
+        // Mostrar estado de carga
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+        
+        // Enviar via AJAX
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Éxito: cerrar modal y mostrar mensaje
+                cerrarModalEspecialidad();
+                
+                // Mostrar mensaje de éxito
+                mostrarMensaje(data.message, 'success');
+                
+                // Recargar página para actualizar listados
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                // Error: mostrar errores en el formulario
+                if (data.errors) {
+                    // Reemplazar contenido con formulario con errores
+                    document.getElementById('modal-especialidad-content').innerHTML = data.errors;
+                } else {
+                    mostrarMensaje('Error al guardar la especialidad', 'error');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarMensaje('Error de conexión. Intenta de nuevo.', 'error');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        });
+    }
+});
+
+/**
+ * Mostrar mensaje temporal
+ */
+function mostrarMensaje(texto, tipo = 'info') {
+    // Remover mensajes existentes
+    document.querySelectorAll('.dashboard-message').forEach(el => el.remove());
+    
+    // Crear nuevo mensaje
+    const msg = document.createElement('div');
+    msg.className = `dashboard-message callout ${tipo === 'success' ? 'success' : 'alert'}`;
+    msg.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        z-index: 10000;
+        max-width: 400px;
+        animation: slideIn 0.3s ease;
+    `;
+    msg.innerHTML = `<i class="fas fa-${tipo === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${texto}`;
+    
+    document.body.appendChild(msg);
+    
+    // Auto-remover después de 4 segundos
+    setTimeout(() => {
+        msg.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => msg.remove(), 300);
+    }, 4000);
+}
+</script>
+
+
+
 {% endblock %}

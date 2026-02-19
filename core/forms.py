@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from datetime import date, datetime, timedelta
 import re
-from .models import Usuario, Paciente, Doctor, Cita, Expediente, Diagnostico
+from .models import Usuario, Paciente, Doctor, Cita, Expediente, Diagnostico, Especialidad
 
 
 # ==================== FORMULARIO DE USUARIO ====================
@@ -223,43 +223,41 @@ class PacienteForm(forms.ModelForm):
 # ==================== FORMULARIO DE DOCTOR ====================
 
 class DoctorForm(forms.ModelForm):
-    """Formulario para registrar/editar doctores"""
+    """Formulario para doctores con especialidades dinámicas"""
     
     class Meta:
         model = Doctor
-        fields = ['nombre', 'especialidad', 'telefono', 'costo_consulta', 'activo']
+        fields = ['nombre', 'especialidad', 'telefono', 'telefono_alternativo', 'email', 'costo_consulta', 'activo']
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class': 'input-group-field',
-                'placeholder': 'Nombre completo del doctor',
-                'required': True
+                'placeholder': 'Nombre completo del doctor'
             }),
             'especialidad': forms.Select(attrs={'class': 'input-group-field'}),
             'telefono': forms.TextInput(attrs={
                 'class': 'input-group-field',
-                'placeholder': '555-0000',
-                'required': True
+                'placeholder': '0412-1234567'
+            }),
+            'telefono_alternativo': forms.TextInput(attrs={
+                'class': 'input-group-field',
+                'placeholder': 'Opcional'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'input-group-field',
+                'placeholder': 'email@ejemplo.com'
             }),
             'costo_consulta': forms.NumberInput(attrs={
                 'class': 'input-group-field',
                 'step': '0.01',
-                'min': '0',
-                'placeholder': '0.00'
+                'min': '0'
             }),
             'activo': forms.CheckboxInput(attrs={'class': 'switch-input'}),
         }
     
-    def clean_costo_consulta(self):
-        costo = self.cleaned_data.get('costo_consulta')
-        if costo is not None and costo < 0:
-            raise ValidationError("El costo no puede ser negativo")
-        return costo
-    
-    def clean_telefono(self):
-        telefono = self.cleaned_data.get('telefono')
-        if telefono and len(telefono.replace(' ', '').replace('-', '')) < 7:
-            raise ValidationError("Teléfono no válido")
-        return telefono
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Solo mostrar especialidades activas por defecto
+        self.fields['especialidad'].queryset = Especialidad.objects.filter(activa=True).order_by('orden', 'nombre')
 
 
 
@@ -586,4 +584,84 @@ class StaffUsuarioForm(forms.ModelForm):
             user.save()
         
         return user
+
+# =============== ESPECIALIDAD ===========================
+
+class EspecialidadForm(forms.ModelForm):
+    """Formulario para crear/editar especialidades médicas"""
+    
+    class Meta:
+        model = Especialidad
+        fields = ['nombre', 'nombre_corto', 'descripcion', 'activa', 'icono', 'orden']
+        widgets = {
+            'nombre': forms.TextInput(attrs={
+                'class': 'input-group-field',
+                'placeholder': 'Ej: Cardiología, Pediatría, Dermatología'
+            }),
+            'nombre_corto': forms.TextInput(attrs={
+                'class': 'input-group-field',
+                'placeholder': 'Ej: CARDIO, PEDIA, DERMA',
+                'style': 'text-transform: uppercase;'
+            }),
+            'descripcion': forms.Textarea(attrs={
+                'class': 'input-group-field',
+                'rows': 3,
+                'placeholder': 'Descripción opcional de la especialidad'
+            }),
+            'activa': forms.CheckboxInput(attrs={'class': 'switch-input'}),
+            'icono': forms.TextInput(attrs={
+                'class': 'input-group-field',
+                'placeholder': 'fa-user-md (de Font Awesome)'
+            }),
+            'orden': forms.NumberInput(attrs={
+                'class': 'input-group-field',
+                'min': '0'
+            }),
+        }
+        labels = {
+            'nombre': 'Nombre de la Especialidad *',
+            'nombre_corto': 'Código Corto *',
+            'descripcion': 'Descripción',
+            'activa': 'Activa (aparece en formularios)',
+            'icono': 'Ícono (Font Awesome)',
+            'orden': 'Orden de aparición',
+        }
+    
+    def clean_nombre_corto(self):
+        """Validar que nombre_corto sea único y en mayúsculas"""
+        nombre_corto = self.cleaned_data.get('nombre_corto', '').upper().strip()
+        
+        if not nombre_corto:
+            raise ValidationError("El código corto es obligatorio")
+        
+        if not re.match(r'^[A-Z]{2,10}$', nombre_corto):
+            raise ValidationError("El código corto debe ser de 2-10 letras mayúsculas")
+        
+        # Verificar unicidad (excluyendo el propio registro si es edición)
+        queryset = Especialidad.objects.filter(nombre_corto=nombre_corto)
+        if self.instance.pk:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        
+        if queryset.exists():
+            raise ValidationError("Ya existe una especialidad con este código corto")
+        
+        return nombre_corto
+    
+    def clean_nombre(self):
+        """Validar que el nombre sea único"""
+        nombre = self.cleaned_data.get('nombre', '').strip()
+        
+        if not nombre:
+            raise ValidationError("El nombre de la especialidad es obligatorio")
+        
+        # Verificar unicidad
+        queryset = Especialidad.objects.filter(nombre__iexact=nombre)
+        if self.instance.pk:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        
+        if queryset.exists():
+            raise ValidationError("Ya existe una especialidad con este nombre")
+        
+        return nombre
+
 

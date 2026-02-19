@@ -81,4 +81,15 @@ urlpatterns = [
     # ==================== PAGINS PUBLICAS ====================
     path('privacidad/', views.politica_privacidad, name='politica_privacidad'),
     path('terminos/', views.terminos_usos, name='terminos_usos'),
+     
+
+    # ==================== ESPECIALIDADES MÉDICAS ====================
+    path('especialidades/', views.lista_especialidades, name='lista_especialidades'),
+    path('especialidades/crear/', views.crear_especialidad, name='crear_especialidad'),
+    path('especialidades/<int:especialidad_id>/editar/', views.editar_especialidad, name='editar_especialidad'),
+    path('especialidades/<int:especialidad_id>/activar/', views.activar_especialidad, name='activar_especialidad'),
+    path('especialidades/<int:especialidad_id>/eliminar/', views.eliminar_especialidad, name='eliminar_especialidad'),
+    
+    # ==================== ESPECIALIDADES DESDE DASHBOARD ====================
+    path('dashboard/agregar-especialidad/', views.agregar_especialidad_dashboard, name='agregar_especialidad_dashboard'),
 ]
